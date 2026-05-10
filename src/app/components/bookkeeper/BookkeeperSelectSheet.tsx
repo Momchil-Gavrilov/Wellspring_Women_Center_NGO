@@ -108,8 +108,8 @@ export default function BookkeeperSelectSheet() {
           <Button
             onClick={handleGo}
             disabled={!isValid}
-            className="w-full h-14 text-black hover:opacity-80 disabled:opacity-50 font-normal text-2xl mt-2"
-            style={{ backgroundColor: '#E0E0E0' }}
+            className="w-full h-14 text-white hover:opacity-80 disabled:opacity-50 font-normal text-2xl mt-2"
+            style={{ backgroundColor: '#FAA308' }}
           >
             View Master Sheet
           </Button>

@@ -53,8 +53,8 @@ export default function ManagerDashboard() {
           {/* Create Shipment */}
           <Button
             onClick={() => navigate('/manager/create-shipment')}
-            className="w-full h-14 text-black hover:opacity-80 font-normal text-2xl"
-            style={{ backgroundColor: '#E0E0E0' }}
+            className="w-full h-14 text-white hover:opacity-80 font-normal text-2xl"
+            style={{ backgroundColor: '#FAA308' }}
           >
             Create Shipment
           </Button>
@@ -82,8 +82,8 @@ export default function ManagerDashboard() {
           {/* Logged Items */}
           <Button
             onClick={() => navigate('/manager/log-items')}
-            className="w-full h-14 text-black hover:opacity-80 font-normal text-2xl"
-            style={{ backgroundColor: '#E0E0E0' }}
+            className="w-full h-14 text-white hover:opacity-80 font-normal text-2xl"
+            style={{ backgroundColor: '#FAA308' }}
           >
             Logged Items
           </Button>

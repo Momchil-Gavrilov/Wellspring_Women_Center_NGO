@@ -84,8 +84,8 @@ export default function VolunteerSelectShipment() {
           <Button
             onClick={handleGo}
             disabled={!selectedShipment}
-            className="w-full h-14 text-black hover:opacity-80 disabled:opacity-50 font-normal text-2xl"
-            style={{ backgroundColor: '#E0E0E0' }}
+            className="w-full h-14 text-white hover:opacity-80 disabled:opacity-50 font-normal text-2xl"
+            style={{ backgroundColor: '#FAA308' }}
           >
             Go
           </Button>

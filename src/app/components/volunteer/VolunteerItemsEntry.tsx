@@ -341,7 +341,7 @@ export default function VolunteerItemsEntry() {
             disabled={saving}
             size="icon"
             className="w-16 h-16 rounded-full"
-            style={{ backgroundColor: '#BDBDBD' }}
+            style={{ backgroundColor: '#FAA308' }}
           >
             <Check className="w-6 h-6 text-white" />
           </Button>

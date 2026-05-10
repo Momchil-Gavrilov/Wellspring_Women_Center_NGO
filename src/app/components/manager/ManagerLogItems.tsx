@@ -354,8 +354,8 @@ export default function ManagerLogItems() {
       <div className="p-4" style={{ borderTop: '1px solid #EEEEEE' }}>
         <Button
           onClick={openCreateDialog}
-          className="w-full h-14 text-black hover:opacity-80 font-normal text-2xl"
-          style={{ backgroundColor: '#E0E0E0' }}
+          className="w-full h-14 text-white hover:opacity-80 font-normal text-2xl"
+          style={{ backgroundColor: '#FAA308' }}
         >
           Create New
         </Button>
