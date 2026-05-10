@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Avatar, AvatarFallback } from '../ui/avatar';
@@ -8,56 +8,163 @@ import { useUser } from '../../context/UserContext';
 import { useData } from '../../context/DataContext';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import type { EntryItem, VolunteerEntry } from '../../../services/api';
+
+function formatDate(iso: string) {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+  });
+}
 
 export default function BookkeeperMasterSheet() {
   const navigate = useNavigate();
-  const { sheetId } = useParams();
-  const { user, addRecentlyViewed } = useUser();
-  const { masterSheets, shipments } = useData();
-  const [activeTab, setActiveTab] = useState<'master' | string>('master');
+  const [searchParams] = useSearchParams();
+  const from = searchParams.get('from') || '';
+  const to   = searchParams.get('to')   || '';
 
-  const sheet = masterSheets.find(s => s.id === sheetId);
+  const { user } = useUser();
+  const { shipments, pricing, getShipmentSum, getShipmentEntries, upsertPrice } = useData();
 
+  // ── Active tab state ────────────────────────────────────────────────────────
+  // activeTab:    'master' | shipmentId
+  // activeSubTab: 'sum'    | volunteerName  (only when activeTab ≠ 'master')
+  const [activeTab, setActiveTab]       = useState<string>('master');
+  const [activeSubTab, setActiveSubTab] = useState<string>('sum');
+
+  // ── Fetched data ─────────────────────────────────────────────────────────────
+  const [masterItems, setMasterItems]         = useState<EntryItem[]>([]);
+  const [shipmentSums, setShipmentSums]       = useState<Record<string, EntryItem[]>>({});
+  const [shipmentEntries, setShipmentEntries] = useState<Record<string, VolunteerEntry[]>>({});
+  const [loading, setLoading]                 = useState(true);
+
+  // ── Price editing ────────────────────────────────────────────────────────────
+  // localPrices: itemName.toLowerCase() → dollar string (e.g. "1.25")
+  const [localPrices, setLocalPrices] = useState<Record<string, string>>({});
+
+  // Map itemName → EntryItem so we can look up unit when saving prices
+  const itemDetailsRef = useRef<Record<string, EntryItem>>({});
+
+  // ── Derived: shipments in selected date range ─────────────────────────────
+  const shipmentsInRange = shipments.filter(
+    s => s.date >= from && s.date <= to
+  );
+
+  // ── Seed prices from persisted pricing context ────────────────────────────
   useEffect(() => {
-    if (sheet) {
-      addRecentlyViewed({ id: sheet.id, name: sheet.name });
+    setLocalPrices(prev => {
+      const next = { ...prev };
+      pricing.forEach(p => {
+        const key = p.itemName.toLowerCase();
+        if (!next[key]) next[key] = p.dollarsPerUnit.toString();
+      });
+      return next;
+    });
+  }, [pricing]);
+
+  // ── Fetch all shipment sums → build master aggregate ─────────────────────
+  useEffect(() => {
+    if (!from || !to) { setLoading(false); return; }
+    if (shipmentsInRange.length === 0) { setMasterItems([]); setLoading(false); return; }
+
+    setLoading(true);
+    Promise.all(shipmentsInRange.map(s => getShipmentSum(s.id).then(sum => ({ id: s.id, sum }))))
+      .then(results => {
+        // Cache per-shipment sums
+        const sumsMap: Record<string, EntryItem[]> = {};
+        results.forEach(({ id, sum }) => { sumsMap[id] = sum; });
+        setShipmentSums(sumsMap);
+
+        // Build master aggregate (sum counts across all shipments)
+        const masterMap: Record<string, EntryItem> = {};
+        results.forEach(({ sum }) => {
+          sum.forEach(item => {
+            const key = item.itemName.toLowerCase();
+            if (!masterMap[key]) masterMap[key] = { ...item, count: 0 };
+            masterMap[key].count += item.count;
+            // track item details for price-saving
+            itemDetailsRef.current[key] = item;
+          });
+        });
+        setMasterItems(
+          Object.values(masterMap).sort((a, b) => a.itemName.localeCompare(b.itemName))
+        );
+      })
+      .catch(() => { setMasterItems([]); })
+      .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [from, to, shipments.length, getShipmentSum]);
+
+  // ── Lazy-fetch volunteer entries when a shipment tab is activated ──────────
+  useEffect(() => {
+    if (activeTab === 'master' || shipmentEntries[activeTab] !== undefined) return;
+    getShipmentEntries(activeTab)
+      .then(entries => {
+        setShipmentEntries(prev => ({ ...prev, [activeTab]: entries }));
+        // also cache item details from individual entries
+        entries.forEach(e => {
+          e.items.forEach(item => {
+            const key = item.itemName.toLowerCase();
+            if (!itemDetailsRef.current[key]) itemDetailsRef.current[key] = item;
+          });
+        });
+      })
+      .catch(() => setShipmentEntries(prev => ({ ...prev, [activeTab]: [] })));
+  }, [activeTab, shipmentEntries, getShipmentEntries]);
+
+  // ── Handlers ─────────────────────────────────────────────────────────────────
+  const switchTab = (tab: string) => {
+    setActiveTab(tab);
+    setActiveSubTab('sum');
+  };
+
+  const handleSavePrice = async () => {
+    const entries = Object.entries(localPrices).filter(([, v]) => v !== '' && !isNaN(parseFloat(v)));
+    if (entries.length === 0) { toast.error('No prices to save.'); return; }
+    try {
+      await Promise.all(
+        entries.map(([key, val]) => {
+          const details = itemDetailsRef.current[key];
+          if (!details) return Promise.resolve();
+          return upsertPrice(details.itemName, {
+            unit: details.unit,
+            dollarsPerUnit: parseFloat(val),
+            updatedBy: user?.name || 'Bookkeeper',
+          });
+        })
+      );
+      toast.success('Prices saved!');
+    } catch {
+      toast.error('Failed to save prices. Please try again.');
     }
-  }, [sheet, addRecentlyViewed]);
-
-  const handleBack = () => {
-    navigate('/bookkeeper');
   };
 
-  const handleProfileClick = () => {
-    navigate('/profile');
-  };
+  // ── Determine what rows to show ───────────────────────────────────────────
+  let displayItems: EntryItem[];
+  if (activeTab === 'master') {
+    displayItems = masterItems;
+  } else if (activeSubTab === 'sum') {
+    displayItems = shipmentSums[activeTab] ?? [];
+  } else {
+    const entries = shipmentEntries[activeTab] ?? [];
+    displayItems = entries.find(e => e.volunteerName === activeSubTab)?.items ?? [];
+  }
 
-  const handleSave = () => {
-    toast.success('Master sheet saved successfully!');
-  };
+  const showPriceColumn = activeTab === 'master' || activeSubTab === 'sum';
+  const currentEntries  = activeTab !== 'master' ? (shipmentEntries[activeTab] ?? []) : [];
 
-  const initials = user?.name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase() || 'B';
-
-  const allItems = shipments.flatMap(s => s.items);
-  const uniqueItems = Array.from(new Set(allItems.map(i => i.itemName)));
-
-  const displayItems = activeTab === 'master'
-    ? allItems
-    : shipments.find(s => s.id === activeTab)?.items || [];
-
-  const displayUniqueItems = Array.from(new Set(displayItems.map(i => i.itemName)));
+  const initials = user?.name.split(' ').map(n => n[0]).join('').toUpperCase() || 'B';
 
   return (
     <div className="size-full bg-white flex flex-col">
+
+      {/* ── Header ── */}
       <div className="flex items-center justify-between p-4 border-b">
         <Button
           variant="ghost"
           size="icon"
-          onClick={handleBack}
+          onClick={() => navigate('/bookkeeper')}
           className="w-12 h-12 hover:opacity-80"
           style={{ backgroundColor: '#9B9B9B' }}
         >
@@ -65,80 +172,115 @@ export default function BookkeeperMasterSheet() {
         </Button>
 
         <div className="text-center">
-          <p className="text-sm text-gray-600">{sheet?.dateRange}</p>
+          <p className="font-semibold">Master Sheet</p>
+          {from && to && (
+            <p className="text-xs text-gray-500">{formatDate(from)} → {formatDate(to)}</p>
+          )}
         </div>
 
-        <div className="flex flex-col items-center cursor-pointer" onClick={handleProfileClick}>
+        <div className="flex flex-col items-center cursor-pointer" onClick={() => navigate('/profile')}>
           <Avatar className="w-16 h-16" style={{ backgroundColor: '#9B9B9B' }}>
-            <AvatarFallback className="text-white" style={{ backgroundColor: '#9B9B9B' }}>{initials}</AvatarFallback>
+            <AvatarFallback className="text-white" style={{ backgroundColor: '#9B9B9B' }}>
+              {initials}
+            </AvatarFallback>
           </Avatar>
           <span className="text-sm mt-1">Bookkeeper</span>
         </div>
       </div>
 
-      <div className="bg-gray-200 p-4 sticky top-0 z-10">
-        <ScrollArea orientation="horizontal" className="w-full">
-          <div className="flex gap-px min-w-max pb-1">
-            <div className="w-40 font-medium bg-gray-200 p-2">Items</div>
-            <div className="w-32 font-medium bg-gray-200 p-2">Count</div>
-            <div className="w-32 font-medium bg-gray-200 p-2">Units</div>
-            <div className="w-32 font-medium bg-gray-200 p-2">Category</div>
-            <div className="w-32 font-medium bg-gray-200 p-2">Price/Unit</div>
-          </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+      {/* ── Volunteer sub-tabs (only when a shipment tab is active) ── */}
+      {activeTab !== 'master' && (
+        <div className="border-b bg-gray-100">
+          <ScrollArea orientation="horizontal" className="w-full">
+            <div className="flex min-w-max">
+              <button
+                onClick={() => setActiveSubTab('sum')}
+                className={`px-5 py-2 text-sm border-r border-gray-300 whitespace-nowrap ${
+                  activeSubTab === 'sum' ? 'bg-white font-semibold' : 'hover:bg-gray-200'
+                }`}
+              >
+                Sum Sheet
+              </button>
+              {currentEntries.map(entry => (
+                <button
+                  key={entry.id}
+                  onClick={() => setActiveSubTab(entry.volunteerName)}
+                  className={`px-5 py-2 text-sm border-r border-gray-300 whitespace-nowrap ${
+                    activeSubTab === entry.volunteerName ? 'bg-white font-semibold' : 'hover:bg-gray-200'
+                  }`}
+                >
+                  {entry.volunteerName}
+                </button>
+              ))}
+              {currentEntries.length === 0 && (
+                <span className="px-5 py-2 text-sm text-gray-400 italic">
+                  Loading volunteer entries…
+                </span>
+              )}
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+        </div>
+      )}
+
+      {/* ── Column headers ── */}
+      <div className="bg-gray-200 px-3 py-2">
+        <div className="flex gap-px min-w-max">
+          <div className="w-44 font-medium text-sm p-1">Items</div>
+          <div className="w-24 font-medium text-sm p-1">Count</div>
+          <div className="w-28 font-medium text-sm p-1">Units</div>
+          <div className="w-32 font-medium text-sm p-1">Category</div>
+          {showPriceColumn && (
+            <div className="w-32 font-medium text-sm p-1">$/Unit</div>
+          )}
+        </div>
       </div>
 
+      {/* ── Rows ── */}
       <div className="flex-1 overflow-hidden">
         <ScrollArea className="h-full">
           <ScrollArea orientation="horizontal" className="w-full">
-            <div className="min-w-max pb-1">
-              {displayUniqueItems.map((itemName, index) => {
-                const item = displayItems.find(i => i.itemName === itemName);
-                return (
-                  <div key={index} className="flex gap-px bg-gray-200 border-b border-gray-300">
-                    <div className="w-40 bg-white p-2">{itemName}</div>
-                    <div className="w-32 bg-white p-2">
-                      <Input
-                        type="number"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        defaultValue={item?.count || 0}
-                        className="border-none h-8"
-                      />
-                    </div>
-                    <div className="w-32 bg-white p-2">
-                      <Input
-                        type="text"
-                        inputMode="text"
-                        defaultValue={item?.unit || ''}
-                        className="border-none h-8"
-                      />
-                    </div>
-                    <div className="w-32 bg-white p-2">
-                      <Input
-                        type="text"
-                        inputMode="text"
-                        defaultValue={item?.category || ''}
-                        className="border-none h-8"
-                      />
-                    </div>
-                    <div className="w-32 bg-white p-2">
-                      <Input
-                        type="number"
-                        inputMode="decimal"
-                        step="0.01"
-                        placeholder="$0.00"
-                        className="border-none h-8"
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-              {displayUniqueItems.length === 0 && (
+            <div className="min-w-max">
+              {loading ? (
+                <div className="p-8 text-center text-gray-400">Loading…</div>
+              ) : shipmentsInRange.length === 0 ? (
                 <div className="p-8 text-center text-gray-400">
-                  No items in this period
+                  No shipments found between {formatDate(from)} and {formatDate(to)}.
+                  <br />
+                  <span className="text-sm">
+                    Make sure shipment dates fall within this range.
+                  </span>
                 </div>
+              ) : displayItems.length === 0 ? (
+                <div className="p-8 text-center text-gray-400">No items logged yet.</div>
+              ) : (
+                displayItems.map((item, index) => {
+                  const priceKey = item.itemName.toLowerCase();
+                  return (
+                    <div key={index} className="flex gap-px bg-gray-200 border-b border-gray-300">
+                      <div className="w-44 bg-white p-2 flex items-center text-sm">{item.itemName}</div>
+                      <div className="w-24 bg-white p-2 flex items-center text-sm">{item.count}</div>
+                      <div className="w-28 bg-white p-2 flex items-center text-sm">{item.unit}</div>
+                      <div className="w-32 bg-white p-2 flex items-center text-sm">{item.category}</div>
+                      {showPriceColumn && (
+                        <div className="w-32 bg-white p-2">
+                          <Input
+                            type="number"
+                            inputMode="decimal"
+                            step="0.01"
+                            min="0"
+                            placeholder="$0.00"
+                            value={localPrices[priceKey] ?? ''}
+                            onChange={e =>
+                              setLocalPrices(prev => ({ ...prev, [priceKey]: e.target.value }))
+                            }
+                            className="border-none h-8 text-sm"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
               )}
             </div>
             <ScrollBar orientation="horizontal" />
@@ -147,38 +289,46 @@ export default function BookkeeperMasterSheet() {
         </ScrollArea>
       </div>
 
+      {/* ── Bottom: shipment tab bar + save ── */}
       <div className="border-t">
         <ScrollArea orientation="horizontal" className="w-full">
-          <div className="flex bg-gray-200 min-w-max pb-1">
+          <div className="flex bg-gray-200 min-w-max">
+            {/* Master tab */}
             <button
-              onClick={() => setActiveTab('master')}
-              className={`px-6 py-4 border-r border-gray-400 whitespace-nowrap ${
-                activeTab === 'master' ? 'bg-gray-300 hover:bg-gray-400' : 'bg-gray-200 hover:bg-gray-300'
+              onClick={() => switchTab('master')}
+              className={`px-6 py-4 border-r border-gray-400 whitespace-nowrap text-sm ${
+                activeTab === 'master' ? 'bg-gray-300 font-semibold' : 'hover:bg-gray-300'
               }`}
             >
               Master
             </button>
-            {shipments.map((shipment) => (
+
+            {/* One tab per shipment in range */}
+            {shipmentsInRange.map(shipment => (
               <button
                 key={shipment.id}
-                onClick={() => setActiveTab(shipment.id)}
-                className={`px-6 py-4 border-r border-gray-400 whitespace-nowrap ${
-                  activeTab === shipment.id ? 'bg-gray-300 hover:bg-gray-400' : 'bg-gray-200 hover:bg-gray-300'
+                onClick={() => switchTab(shipment.id)}
+                className={`px-6 py-4 border-r border-gray-400 whitespace-nowrap text-sm ${
+                  activeTab === shipment.id ? 'bg-gray-300 font-semibold' : 'hover:bg-gray-300'
                 }`}
               >
                 {shipment.name}
               </button>
             ))}
+
+            {shipmentsInRange.length === 0 && !loading && (
+              <span className="px-6 py-4 text-gray-400 text-sm italic">No shipments in range</span>
+            )}
           </div>
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
 
         <div className="p-4">
           <Button
-            onClick={handleSave}
+            onClick={handleSavePrice}
             className="w-full h-16 bg-gray-300 hover:bg-gray-400 text-black"
           >
-            Save
+            Save Prices
           </Button>
         </div>
       </div>

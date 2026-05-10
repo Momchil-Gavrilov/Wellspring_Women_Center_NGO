@@ -49,7 +49,7 @@ export default function App() {
 
               {/* Bookkeeper Routes */}
               <Route path="/bookkeeper" element={<BookkeeperSelectSheet />} />
-              <Route path="/bookkeeper/master-sheet/:sheetId" element={<BookkeeperMasterSheet />} />
+              <Route path="/bookkeeper/master-sheet" element={<BookkeeperMasterSheet />} />
 
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
