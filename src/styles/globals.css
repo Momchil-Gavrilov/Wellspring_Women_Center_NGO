@@ -1,3 +1,10 @@
+/* ── Josefin Sans everywhere — defeats any inline font-family overrides ── */
+*,
+*::before,
+*::after {
+  font-family: 'Josefin Sans', sans-serif;
+}
+
 /* Ensure touch devices trigger keyboards properly */
 input,
 textarea {

@@ -55,26 +55,26 @@ export default function BookkeeperSelectSheet() {
       <div className="flex items-center justify-between p-4" style={{ backgroundColor: '#F6F6F6', borderBottom: '1px solid #E0E0E0' }}>
         <button
           onClick={() => navigate('/')}
-          className="flex items-center justify-center w-12 h-12 hover:opacity-70"
-          style={{ backgroundColor: '#A1A1A1', color: '#fff', fontSize: 22, fontFamily: 'Inter, sans-serif' }}
+          className="flex items-center justify-center w-12 h-12 rounded-full hover:opacity-70"
+          style={{ backgroundColor: '#BDBDBD', color: '#fff', fontSize: 22 }}
         >
           {'<'}
         </button>
 
         <div className="flex flex-col items-center cursor-pointer" onClick={() => navigate('/profile')}>
-          <Avatar className="w-16 h-16" style={{ backgroundColor: '#A1A1A1' }}>
-            <AvatarFallback className="text-white" style={{ backgroundColor: '#A1A1A1' }}>{initials}</AvatarFallback>
+          <Avatar className="w-16 h-16" style={{ backgroundColor: '#BDBDBD' }}>
+            <AvatarFallback className="text-white" style={{ backgroundColor: '#BDBDBD' }}>{initials}</AvatarFallback>
           </Avatar>
-          <span className="text-sm mt-1" style={{ fontFamily: 'Inter, sans-serif', color: '#030303' }}>Bookkeeper</span>
+          <span className="text-sm mt-1" style={{ color: '#030303' }}>Bookkeeper</span>
         </div>
       </div>
 
       {/* ── Content ── */}
       <div className="flex-1 flex flex-col items-center justify-start px-8 pt-12">
-        <h1 className="font-normal mb-2" style={{ fontFamily: 'Inter, sans-serif', fontSize: 32, color: '#000' }}>
+        <h1 className="font-normal mb-2" style={{ fontSize: 32, color: '#000' }}>
           Master Sheet
         </h1>
-        <p className="mb-10" style={{ fontFamily: 'Inter, sans-serif', fontSize: 15, color: '#6B6B6B' }}>
+        <p className="mb-10" style={{ fontSize: 15, color: '#6B6B6B' }}>
           Select a date range to view
         </p>
 
@@ -85,8 +85,8 @@ export default function BookkeeperSelectSheet() {
               type="date"
               value={from}
               onChange={e => setFrom(e.target.value)}
-              className="h-14 border-none rounded-none"
-              style={{ backgroundColor: '#D9D9D9' }}
+              className="h-14 border-none"
+              style={{ backgroundColor: '#EEEEEE' }}
             />
           </div>
 
@@ -96,8 +96,8 @@ export default function BookkeeperSelectSheet() {
               type="date"
               value={to}
               onChange={e => setTo(e.target.value)}
-              className="h-14 border-none rounded-none"
-              style={{ backgroundColor: '#D9D9D9' }}
+              className="h-14 border-none"
+              style={{ backgroundColor: '#EEEEEE' }}
             />
           </div>
 
@@ -108,8 +108,8 @@ export default function BookkeeperSelectSheet() {
           <Button
             onClick={handleGo}
             disabled={!isValid}
-            className="w-full h-14 text-black hover:opacity-80 disabled:opacity-50 rounded-none font-normal text-2xl mt-2"
-            style={{ backgroundColor: '#CACACA' }}
+            className="w-full h-14 text-black hover:opacity-80 disabled:opacity-50 font-normal text-2xl mt-2"
+            style={{ backgroundColor: '#E0E0E0' }}
           >
             View Master Sheet
           </Button>
@@ -118,12 +118,12 @@ export default function BookkeeperSelectSheet() {
         {/* Recently Viewed */}
         {recentRanges.length > 0 && (
           <div className="w-full max-w-sm mt-10">
-            <div className="px-4 py-2" style={{ backgroundColor: '#E9E9E9' }}>
-              <p className="text-center text-sm" style={{ fontFamily: 'Inter, sans-serif', color: '#6B6B6B' }}>
+            <div className="px-4 py-2" style={{ backgroundColor: '#F2F2F2', borderRadius: '1rem' }}>
+              <p className="text-center text-sm" style={{ color: '#6B6B6B' }}>
                 Recently Viewed
               </p>
             </div>
-            <div style={{ backgroundColor: '#F2F2F2' }}>
+            <div style={{ backgroundColor: '#FAFAFA', borderRadius: '1rem' }}>
               {recentRanges.map((key, index) => {
                 const [f, t] = key.split('_');
                 return (
@@ -132,11 +132,10 @@ export default function BookkeeperSelectSheet() {
                     onClick={() => handleRecentClick(key)}
                     className="w-full text-left px-4 py-3 hover:bg-gray-100"
                     style={{
-                      fontFamily: 'Inter, sans-serif',
                       fontSize: 20,
                       color: '#AAAAAA',
                       textDecoration: 'underline',
-                      borderBottom: index < recentRanges.length - 1 ? '1px solid #D9D9D9' : 'none',
+                      borderBottom: index < recentRanges.length - 1 ? '1px solid #EEEEEE' : 'none',
                     }}
                   >
                     {formatDate(f)} → {formatDate(t)}

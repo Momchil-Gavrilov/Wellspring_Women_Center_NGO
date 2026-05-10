@@ -55,10 +55,10 @@ export default function LoginScreen() {
       <div className="w-full max-w-sm px-8 relative z-10">
         {/* Title */}
         <div className="text-center mb-10">
-          <h1 className="font-normal leading-tight" style={{ fontFamily: 'Inter, sans-serif', fontSize: 36, color: '#000' }}>
+          <h1 className="font-normal leading-tight" style={{ fontSize: 36, color: '#000' }}>
             Wellspring
           </h1>
-          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 24, color: '#000' }}>
+          <p style={{ fontSize: 24, color: '#000' }}>
             Women's Center
           </p>
         </div>
@@ -72,8 +72,8 @@ export default function LoginScreen() {
             value={username}
             onChange={e => setUsername(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleLogin()}
-            className="border-none h-14 text-base rounded-none"
-            style={{ backgroundColor: '#D9D9D9', fontSize: 15, color: '#727272' }}
+            className="border-none h-14 text-base"
+            style={{ backgroundColor: '#EEEEEE', fontSize: 15, color: '#727272' }}
           />
 
           <Input
@@ -84,28 +84,28 @@ export default function LoginScreen() {
             value={password}
             onChange={e => setPassword(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleLogin()}
-            className="border-none h-14 text-base rounded-none"
-            style={{ backgroundColor: '#D9D9D9', fontSize: 15, color: '#727272' }}
+            className="border-none h-14 text-base"
+            style={{ backgroundColor: '#EEEEEE', fontSize: 15, color: '#727272' }}
           />
 
           <Button
             onClick={handleLogin}
-            className="w-full h-14 text-black hover:opacity-80 rounded-none font-normal text-2xl"
-            style={{ backgroundColor: '#CACACA' }}
+            className="w-full h-14 text-black hover:opacity-80 font-normal text-2xl"
+            style={{ backgroundColor: '#E0E0E0' }}
           >
             Log In
           </Button>
 
-          <div className="border-t my-4" style={{ borderColor: '#A1A1A1' }} />
+          <div className="border-t my-4" style={{ borderColor: '#BDBDBD' }} />
 
-          <p className="text-center text-sm" style={{ fontFamily: 'Inter, sans-serif', color: '#000' }}>
+          <p className="text-center text-sm" style={{ color: '#000' }}>
             Don't have an account?
           </p>
 
           <Button
             onClick={() => navigate('/onboarding')}
-            className="w-full h-14 text-black hover:opacity-80 rounded-none font-normal text-2xl"
-            style={{ backgroundColor: '#CACACA' }}
+            className="w-full h-14 text-black hover:opacity-80 font-normal text-2xl"
+            style={{ backgroundColor: '#E0E0E0' }}
           >
             Sign Up
           </Button>

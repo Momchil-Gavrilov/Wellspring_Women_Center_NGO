@@ -207,8 +207,8 @@ export default function VolunteerItemsEntry() {
       <div className="flex items-center justify-between p-4" style={{ backgroundColor: '#F6F6F6', borderBottom: '1px solid #E0E0E0' }}>
         <button
           onClick={() => navigate('/volunteer')}
-          className="flex items-center justify-center w-12 h-12 hover:opacity-70"
-          style={{ backgroundColor: '#A1A1A1', color: '#fff', fontSize: 22, fontFamily: 'Inter, sans-serif' }}
+          className="flex items-center justify-center w-12 h-12 rounded-full hover:opacity-70"
+          style={{ backgroundColor: '#BDBDBD', color: '#fff', fontSize: 22 }}
         >
           {'<'}
         </button>
@@ -219,8 +219,8 @@ export default function VolunteerItemsEntry() {
         </div>
 
         <div className="flex flex-col items-center cursor-pointer" onClick={() => navigate('/profile')}>
-          <Avatar className="w-14 h-14" style={{ backgroundColor: '#A1A1A1' }}>
-            <AvatarFallback className="text-white" style={{ backgroundColor: '#A1A1A1' }}>{initials}</AvatarFallback>
+          <Avatar className="w-14 h-14" style={{ backgroundColor: '#BDBDBD' }}>
+            <AvatarFallback className="text-white" style={{ backgroundColor: '#BDBDBD' }}>{initials}</AvatarFallback>
           </Avatar>
           <span className="text-xs mt-1" style={{ color: '#1F1F1F' }}>Volunteer</span>
         </div>
@@ -229,7 +229,7 @@ export default function VolunteerItemsEntry() {
       {/* Column headers */}
       <div
         className="grid gap-px text-sm font-medium px-2 py-2 sticky top-0 z-10"
-        style={{ gridTemplateColumns: '2fr 1fr 1fr 1.5fr 2rem', backgroundColor: '#CACACA', color: '#1F1F1F' }}
+        style={{ gridTemplateColumns: '2fr 1fr 1fr 1.5fr 2rem', backgroundColor: '#E0E0E0', color: '#1F1F1F' }}
       >
         <div className="pl-2">Item</div>
         <div>Count</div>
@@ -252,7 +252,7 @@ export default function VolunteerItemsEntry() {
                 inputMode="text"
                 value={row.itemName}
                 onChange={e => handleItemChange(index, 'itemName', e.target.value)}
-                className="border-none rounded-none h-11"
+                className="border-none h-11"
                 placeholder="Item name"
               />
               <Input
@@ -260,7 +260,7 @@ export default function VolunteerItemsEntry() {
                 inputMode="decimal"
                 value={row.count}
                 onChange={e => handleItemChange(index, 'count', e.target.value)}
-                className="border-none rounded-none h-11"
+                className="border-none h-11"
                 placeholder="0"
               />
               <Input
@@ -268,7 +268,7 @@ export default function VolunteerItemsEntry() {
                 inputMode="text"
                 value={row.unit}
                 onChange={e => handleItemChange(index, 'unit', e.target.value)}
-                className="border-none rounded-none h-11"
+                className="border-none h-11"
                 placeholder="count"
               />
               <Input
@@ -276,7 +276,7 @@ export default function VolunteerItemsEntry() {
                 inputMode="text"
                 value={row.category}
                 onChange={e => handleItemChange(index, 'category', e.target.value)}
-                className="border-none rounded-none h-11"
+                className="border-none h-11"
                 placeholder="General"
               />
               <button

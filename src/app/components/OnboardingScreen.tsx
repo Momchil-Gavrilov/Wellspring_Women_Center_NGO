@@ -42,10 +42,10 @@ export default function OnboardingScreen() {
 
       <div className="w-full max-w-sm space-y-8 relative z-10">
         <div className="text-center">
-          <h1 className="font-normal mb-3" style={{ fontFamily: 'Inter, sans-serif', fontSize: 32, color: '#000' }}>
+          <h1 className="font-normal mb-3" style={{ fontSize: 32, color: '#000' }}>
             Welcome to Wellspring
           </h1>
-          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 15, color: '#6B6B6B' }}>
+          <p style={{ fontSize: 15, color: '#6B6B6B' }}>
             Please enter your name to get started
           </p>
         </div>
@@ -59,15 +59,15 @@ export default function OnboardingScreen() {
             value={name}
             onChange={e => setName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleProceed()}
-            className="border-none h-14 rounded-none"
-            style={{ backgroundColor: '#D9D9D9', fontSize: 15 }}
+            className="border-none h-14"
+            style={{ backgroundColor: '#EEEEEE', fontSize: 15 }}
           />
 
           <Button
             onClick={handleProceed}
             disabled={!name}
-            className="w-full h-14 text-black hover:opacity-80 disabled:opacity-50 rounded-none font-normal text-2xl"
-            style={{ backgroundColor: '#CACACA' }}
+            className="w-full h-14 text-black hover:opacity-80 disabled:opacity-50 font-normal text-2xl"
+            style={{ backgroundColor: '#E0E0E0' }}
           >
             Proceed
           </Button>

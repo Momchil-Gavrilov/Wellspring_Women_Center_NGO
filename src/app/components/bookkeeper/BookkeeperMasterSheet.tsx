@@ -200,39 +200,39 @@ export default function BookkeeperMasterSheet() {
       <div className="flex items-center justify-between p-4" style={{ backgroundColor: '#F6F6F6', borderBottom: '1px solid #E0E0E0' }}>
         <button
           onClick={() => navigate('/bookkeeper')}
-          className="flex items-center justify-center w-12 h-12 hover:opacity-70"
-          style={{ backgroundColor: '#A1A1A1', color: '#fff', fontSize: 22, fontFamily: 'Inter, sans-serif' }}
+          className="flex items-center justify-center w-12 h-12 rounded-full hover:opacity-70"
+          style={{ backgroundColor: '#BDBDBD', color: '#fff', fontSize: 22 }}
         >
           {'<'}
         </button>
 
         <div className="text-center">
-          <p className="font-medium" style={{ fontFamily: 'Inter, sans-serif' }}>Master Sheet</p>
+          <p className="font-medium">Master Sheet</p>
           {from && to && (
             <p className="text-xs" style={{ color: '#6B6B6B' }}>{formatDate(from)} → {formatDate(to)}</p>
           )}
         </div>
 
         <div className="flex flex-col items-center cursor-pointer" onClick={() => navigate('/profile')}>
-          <Avatar className="w-16 h-16" style={{ backgroundColor: '#A1A1A1' }}>
-            <AvatarFallback className="text-white" style={{ backgroundColor: '#A1A1A1' }}>
+          <Avatar className="w-16 h-16" style={{ backgroundColor: '#BDBDBD' }}>
+            <AvatarFallback className="text-white" style={{ backgroundColor: '#BDBDBD' }}>
               {initials}
             </AvatarFallback>
           </Avatar>
-          <span className="text-sm mt-1" style={{ fontFamily: 'Inter, sans-serif', color: '#030303' }}>Bookkeeper</span>
+          <span className="text-sm mt-1" style={{ color: '#030303' }}>Bookkeeper</span>
         </div>
       </div>
 
       {/* ── Volunteer sub-tabs (only when a shipment tab is active) ── */}
       {activeTab !== 'master' && (
-        <div style={{ borderBottom: '1px solid #D9D9D9', backgroundColor: '#F2F2F2' }}>
+        <div style={{ borderBottom: '1px solid #EEEEEE', backgroundColor: '#FAFAFA' }}>
           <ScrollArea orientation="horizontal" className="w-full">
             <div className="flex min-w-max">
               <button
                 onClick={() => setActiveSubTab('sum')}
                 className="px-5 py-2 text-sm whitespace-nowrap"
                 style={{
-                  borderRight: '1px solid #D9D9D9',
+                  borderRight: '1px solid #EEEEEE',
                   backgroundColor: activeSubTab === 'sum' ? '#FDFFEC' : 'transparent',
                   fontWeight: activeSubTab === 'sum' ? 600 : 400,
                 }}
@@ -245,7 +245,7 @@ export default function BookkeeperMasterSheet() {
                   onClick={() => setActiveSubTab(entry.volunteerName)}
                   className="px-5 py-2 text-sm whitespace-nowrap"
                   style={{
-                    borderRight: '1px solid #D9D9D9',
+                    borderRight: '1px solid #EEEEEE',
                     backgroundColor: activeSubTab === entry.volunteerName ? '#FDFFEC' : 'transparent',
                     fontWeight: activeSubTab === entry.volunteerName ? 600 : 400,
                   }}
@@ -265,7 +265,7 @@ export default function BookkeeperMasterSheet() {
       )}
 
       {/* ── Column headers ── */}
-      <div className="px-3 py-2" style={{ backgroundColor: '#CACACA' }}>
+      <div className="px-3 py-2" style={{ backgroundColor: '#E0E0E0' }}>
         <div className="flex gap-px min-w-max">
           <div className="w-44 font-medium text-sm p-1">Items</div>
           <div className="w-24 font-medium text-sm p-1">Count</div>
@@ -298,7 +298,7 @@ export default function BookkeeperMasterSheet() {
                 displayItems.map((item, index) => {
                   const priceKey = item.itemName.toLowerCase();
                   return (
-                    <div key={index} className="flex gap-px" style={{ borderBottom: '1px solid #D9D9D9', backgroundColor: '#D9D9D9' }}>
+                    <div key={index} className="flex gap-px" style={{ borderBottom: '1px solid #EEEEEE', backgroundColor: '#EEEEEE' }}>
                       <div className="w-44 p-2 flex items-center text-sm" style={{ backgroundColor: index % 2 === 0 ? '#FDFFEC' : '#F6F6F6' }}>{item.itemName}</div>
                       <div className="w-24 p-2 flex items-center text-sm" style={{ backgroundColor: index % 2 === 0 ? '#FDFFEC' : '#F6F6F6' }}>{item.count}</div>
                       <div className="w-28 p-2 flex items-center text-sm" style={{ backgroundColor: index % 2 === 0 ? '#FDFFEC' : '#F6F6F6' }}>{item.unit}</div>
@@ -331,16 +331,16 @@ export default function BookkeeperMasterSheet() {
       </div>
 
       {/* ── Bottom: shipment tab bar + save ── */}
-      <div style={{ borderTop: '1px solid #D9D9D9' }}>
+      <div style={{ borderTop: '1px solid #EEEEEE' }}>
         <ScrollArea orientation="horizontal" className="w-full">
-          <div className="flex min-w-max" style={{ backgroundColor: '#D9D9D9' }}>
+          <div className="flex min-w-max" style={{ backgroundColor: '#EEEEEE' }}>
             {/* Master tab */}
             <button
               onClick={() => switchTab('master')}
               className="px-6 py-4 whitespace-nowrap text-sm"
               style={{
-                borderRight: '1px solid #A1A1A1',
-                backgroundColor: activeTab === 'master' ? '#CACACA' : '#D9D9D9',
+                borderRight: '1px solid #BDBDBD',
+                backgroundColor: activeTab === 'master' ? '#E0E0E0' : '#EEEEEE',
                 fontWeight: activeTab === 'master' ? 600 : 400,
               }}
             >
@@ -354,8 +354,8 @@ export default function BookkeeperMasterSheet() {
                 onClick={() => switchTab(shipment.id)}
                 className="px-6 py-4 whitespace-nowrap text-sm"
                 style={{
-                  borderRight: '1px solid #A1A1A1',
-                  backgroundColor: activeTab === shipment.id ? '#CACACA' : '#D9D9D9',
+                  borderRight: '1px solid #BDBDBD',
+                  backgroundColor: activeTab === shipment.id ? '#E0E0E0' : '#EEEEEE',
                   fontWeight: activeTab === shipment.id ? 600 : 400,
                 }}
               >
@@ -373,15 +373,15 @@ export default function BookkeeperMasterSheet() {
         <div className="p-4 flex gap-3">
           <Button
             onClick={handleSavePrice}
-            className="flex-1 h-14 text-black hover:opacity-80 rounded-none font-normal text-lg"
-            style={{ backgroundColor: '#CACACA' }}
+            className="flex-1 h-14 text-black hover:opacity-80 font-normal text-lg"
+            style={{ backgroundColor: '#E0E0E0' }}
           >
             Save Prices
           </Button>
           <Button
             onClick={handleExport}
             disabled={displayItems.length === 0}
-            className="flex-1 h-14 text-white hover:opacity-90 disabled:opacity-50 rounded-none font-normal text-lg"
+            className="flex-1 h-14 text-white hover:opacity-90 disabled:opacity-50 font-normal text-lg"
             style={{ backgroundColor: '#9ABB39' }}
           >
             Export

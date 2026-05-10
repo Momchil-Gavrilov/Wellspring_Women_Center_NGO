@@ -66,8 +66,8 @@ export default function ManagerShipmentView() {
       <div className="flex items-center justify-between p-4" style={{ backgroundColor: '#F6F6F6', borderBottom: '1px solid #E0E0E0' }}>
         <button
           onClick={() => navigate('/manager')}
-          className="flex items-center justify-center w-12 h-12 hover:opacity-70"
-          style={{ backgroundColor: '#A1A1A1', color: '#fff', fontSize: 22, fontFamily: 'Inter, sans-serif' }}
+          className="flex items-center justify-center w-12 h-12 rounded-full hover:opacity-70"
+          style={{ backgroundColor: '#BDBDBD', color: '#fff', fontSize: 22 }}
         >
           {'<'}
         </button>
@@ -78,15 +78,15 @@ export default function ManagerShipmentView() {
         </div>
 
         <div className="flex flex-col items-center cursor-pointer" onClick={() => navigate('/profile')}>
-          <Avatar className="w-16 h-16" style={{ backgroundColor: '#A1A1A1' }}>
-            <AvatarFallback className="text-white" style={{ backgroundColor: '#A1A1A1' }}>{initials}</AvatarFallback>
+          <Avatar className="w-16 h-16" style={{ backgroundColor: '#BDBDBD' }}>
+            <AvatarFallback className="text-white" style={{ backgroundColor: '#BDBDBD' }}>{initials}</AvatarFallback>
           </Avatar>
-          <span className="text-sm mt-1" style={{ fontFamily: 'Inter, sans-serif', color: '#030303' }}>Manager</span>
+          <span className="text-sm mt-1" style={{ color: '#030303' }}>Manager</span>
         </div>
       </div>
 
       {/* ── Column headers ── */}
-      <div className="flex" style={{ backgroundColor: '#CACACA' }}>
+      <div className="flex" style={{ backgroundColor: '#E0E0E0' }}>
         <div className="w-44 p-3 text-sm font-medium">Items</div>
         <div className="w-24 p-3 text-sm font-medium">Count</div>
         <div className="w-24 p-3 text-sm font-medium">Units</div>
@@ -106,7 +106,7 @@ export default function ManagerShipmentView() {
                 <div
                   key={i}
                   className="flex"
-                  style={{ borderBottom: '1px solid #D9D9D9', backgroundColor: i % 2 === 0 ? '#FDFFEC' : '#F6F6F6' }}
+                  style={{ borderBottom: '1px solid #EEEEEE', backgroundColor: i % 2 === 0 ? '#FDFFEC' : '#F6F6F6' }}
                 >
                   <div className="w-44 p-3 text-sm">{item.itemName}</div>
                   <div className="w-24 p-3 text-sm">{item.count}</div>
@@ -121,16 +121,16 @@ export default function ManagerShipmentView() {
       </div>
 
       {/* ── Bottom: volunteer tabs + export ── */}
-      <div style={{ borderTop: '1px solid #D9D9D9' }}>
+      <div style={{ borderTop: '1px solid #EEEEEE' }}>
         <ScrollArea orientation="horizontal" className="w-full">
-          <div className="flex min-w-max" style={{ backgroundColor: '#D9D9D9' }}>
+          <div className="flex min-w-max" style={{ backgroundColor: '#EEEEEE' }}>
             <button
               onClick={() => setActiveTab('sum')}
               className="px-6 py-3 text-sm whitespace-nowrap"
               style={{
-                backgroundColor: activeTab === 'sum' ? '#CACACA' : '#D9D9D9',
+                backgroundColor: activeTab === 'sum' ? '#E0E0E0' : '#EEEEEE',
                 fontWeight: activeTab === 'sum' ? 600 : 400,
-                borderRight: '1px solid #A1A1A1',
+                borderRight: '1px solid #BDBDBD',
               }}
             >
               Sum Sheet
@@ -141,9 +141,9 @@ export default function ManagerShipmentView() {
                 onClick={() => setActiveTab(entry.volunteerName)}
                 className="px-6 py-3 text-sm whitespace-nowrap"
                 style={{
-                  backgroundColor: activeTab === entry.volunteerName ? '#CACACA' : '#D9D9D9',
+                  backgroundColor: activeTab === entry.volunteerName ? '#E0E0E0' : '#EEEEEE',
                   fontWeight: activeTab === entry.volunteerName ? 600 : 400,
-                  borderRight: '1px solid #A1A1A1',
+                  borderRight: '1px solid #BDBDBD',
                 }}
               >
                 {entry.volunteerName}
@@ -156,8 +156,8 @@ export default function ManagerShipmentView() {
         <div className="p-4">
           <Button
             onClick={handleExport}
-            className="w-full h-14 text-black hover:opacity-80 rounded-none font-normal text-xl"
-            style={{ backgroundColor: '#CACACA' }}
+            className="w-full h-14 text-black hover:opacity-80 font-normal text-xl"
+            style={{ backgroundColor: '#E0E0E0' }}
           >
             Export CSV
           </Button>

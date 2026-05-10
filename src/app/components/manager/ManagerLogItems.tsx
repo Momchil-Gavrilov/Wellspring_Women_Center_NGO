@@ -198,19 +198,19 @@ export default function ManagerLogItems() {
       <div className="flex items-center justify-between p-4" style={{ backgroundColor: '#F6F6F6', borderBottom: '1px solid #E0E0E0' }}>
         <button
           onClick={() => navigate('/manager')}
-          className="flex items-center justify-center w-12 h-12 hover:opacity-70"
-          style={{ backgroundColor: '#A1A1A1', color: '#fff', fontSize: 22, fontFamily: 'Inter, sans-serif' }}
+          className="flex items-center justify-center w-12 h-12 rounded-full hover:opacity-70"
+          style={{ backgroundColor: '#BDBDBD', color: '#fff', fontSize: 22 }}
         >
           {'<'}
         </button>
 
-        <h1 className="font-normal" style={{ fontFamily: 'Inter, sans-serif', fontSize: 24, color: '#1F1F1F' }}>Items</h1>
+        <h1 className="font-normal" style={{ fontSize: 24, color: '#1F1F1F' }}>Items</h1>
 
         <div className="flex flex-col items-center cursor-pointer" onClick={() => navigate('/profile')}>
-          <Avatar className="w-16 h-16" style={{ backgroundColor: '#A1A1A1' }}>
-            <AvatarFallback className="text-white" style={{ backgroundColor: '#A1A1A1' }}>{initials}</AvatarFallback>
+          <Avatar className="w-16 h-16" style={{ backgroundColor: '#BDBDBD' }}>
+            <AvatarFallback className="text-white" style={{ backgroundColor: '#BDBDBD' }}>{initials}</AvatarFallback>
           </Avatar>
-          <span className="text-sm mt-1" style={{ fontFamily: 'Inter, sans-serif', color: '#1F1F1F' }}>Manager</span>
+          <span className="text-sm mt-1" style={{ color: '#1F1F1F' }}>Manager</span>
         </div>
       </div>
 
@@ -222,8 +222,8 @@ export default function ManagerLogItems() {
           placeholder="Search items..."
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
-          className="w-full h-12 border-none rounded-none"
-          style={{ backgroundColor: '#D9D9D9' }}
+          className="w-full h-12 border-none"
+          style={{ backgroundColor: '#EEEEEE' }}
         />
       </div>
 
@@ -240,8 +240,8 @@ export default function ManagerLogItems() {
               <div className="space-y-4">
                 {unapprovedItems.map((item, index) => (
                   <div key={index} className="flex items-start gap-3">
-                    <Avatar className="w-10 h-10 flex-shrink-0" style={{ backgroundColor: '#D9D9D9' }}>
-                      <AvatarFallback className="text-white text-sm" style={{ backgroundColor: '#D9D9D9', color: '#6B6B6B' }}>
+                    <Avatar className="w-10 h-10 flex-shrink-0" style={{ backgroundColor: '#EEEEEE' }}>
+                      <AvatarFallback className="text-white text-sm" style={{ backgroundColor: '#EEEEEE', color: '#6B6B6B' }}>
                         {item.itemName[0].toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
@@ -259,8 +259,8 @@ export default function ManagerLogItems() {
                             onClick={() => openApproveDialog(item)}
                             variant="ghost"
                             size="sm"
-                            className="h-8 px-3 text-black hover:opacity-80 rounded-none"
-                            style={{ backgroundColor: '#D9D9D9', fontSize: 12 }}
+                            className="h-8 px-3 text-black hover:opacity-80"
+                            style={{ backgroundColor: '#EEEEEE', fontSize: 12 }}
                           >
                             Edit
                           </Button>
@@ -268,7 +268,7 @@ export default function ManagerLogItems() {
                             onClick={() => handleApproveItem(item)}
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-white hover:opacity-80 rounded-none"
+                            className="h-8 w-8 text-white hover:opacity-80"
                             style={{ backgroundColor: '#9ABB39' }}
                           >
                             <Check className="w-4 h-4" />
@@ -309,7 +309,7 @@ export default function ManagerLogItems() {
                     <h3 className="text-2xl font-black mb-3">{letter}</h3>
                     {items.map(item => (
                       <div key={item.id} className="mb-4 flex items-start justify-between gap-2"
-                        style={{ borderBottom: '1px solid #D9D9D9', paddingBottom: 12 }}>
+                        style={{ borderBottom: '1px solid #EEEEEE', paddingBottom: 12 }}>
                         <div className="flex-1 min-w-0">
                           <h4 className="font-medium text-sm">{item.name}</h4>
                           <p className="text-sm" style={{ color: '#6B6B6B' }}>{item.description}</p>
@@ -320,8 +320,8 @@ export default function ManagerLogItems() {
                             onClick={() => openEditCatalogDialog(item)}
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 hover:opacity-80 rounded-none"
-                            style={{ backgroundColor: '#D9D9D9' }}
+                            className="h-8 w-8 hover:opacity-80"
+                            style={{ backgroundColor: '#EEEEEE' }}
                             title="Edit item"
                           >
                             <Pencil className="w-4 h-4" />
@@ -330,7 +330,7 @@ export default function ManagerLogItems() {
                             onClick={() => handleDeleteCatalogItem(item)}
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-white hover:opacity-80 rounded-none"
+                            className="h-8 w-8 text-white hover:opacity-80"
                             style={{ backgroundColor: '#E57373' }}
                             title="Delete item"
                           >
@@ -351,11 +351,11 @@ export default function ManagerLogItems() {
       </ScrollArea>
 
       {/* ── Footer ── */}
-      <div className="p-4" style={{ borderTop: '1px solid #D9D9D9' }}>
+      <div className="p-4" style={{ borderTop: '1px solid #EEEEEE' }}>
         <Button
           onClick={openCreateDialog}
-          className="w-full h-14 text-black hover:opacity-80 rounded-none font-normal text-2xl"
-          style={{ backgroundColor: '#CACACA' }}
+          className="w-full h-14 text-black hover:opacity-80 font-normal text-2xl"
+          style={{ backgroundColor: '#E0E0E0' }}
         >
           Create New
         </Button>
@@ -363,9 +363,9 @@ export default function ManagerLogItems() {
 
       {/* ── Dialog ── */}
       <Dialog open={dialogOpen} onOpenChange={open => { if (!submitting) setDialogOpen(open); }}>
-        <DialogContent style={{ backgroundColor: '#D9D9D9' }} className="rounded-none">
+        <DialogContent style={{ backgroundColor: '#F0F0F0' }} className="">
           <DialogHeader>
-            <DialogTitle className="text-3xl text-center mb-4" style={{ fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+            <DialogTitle className="text-3xl text-center mb-4" style={{ fontWeight: 400 }}>
               {dialogTitle}
             </DialogTitle>
             <DialogDescription className="sr-only">
@@ -379,22 +379,22 @@ export default function ManagerLogItems() {
               { label: 'Category',     value: newItemCategory, set: setNewItemCategory },
             ].map(({ label, value, set }) => (
               <div key={label} className="flex items-center gap-4">
-                <label className="w-28 text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>{label}</label>
+                <label className="w-28 text-sm">{label}</label>
                 <Input
                   type="text"
                   inputMode="text"
                   value={value}
                   onChange={e => set(e.target.value)}
-                  className="flex-1 border-none h-10 rounded-none"
-                  style={{ backgroundColor: '#BCBCBC' }}
+                  className="flex-1 border-none h-10"
+                  style={{ backgroundColor: '#E0E0E0' }}
                 />
               </div>
             ))}
             <Button
               onClick={handleSave}
               disabled={submitting}
-              className="w-full h-14 text-black hover:opacity-80 disabled:opacity-50 rounded-none font-normal text-xl"
-              style={{ backgroundColor: '#ACACAC' }}
+              className="w-full h-14 text-black hover:opacity-80 disabled:opacity-50 font-normal text-xl"
+              style={{ backgroundColor: '#CACACA' }}
             >
               {submitting ? 'Saving…' : dialogSaveLabel}
             </Button>
