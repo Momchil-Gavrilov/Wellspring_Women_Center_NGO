@@ -32,7 +32,7 @@ export default function ManagerShipmentView() {
   const handleExport = () => {
     const rows = [
       ['Items', 'Count', 'Units', 'Category'],
-      ...sumItems.map(item => [item.itemName, item.count.toString(), item.unit, item.category]),
+      ...displayItems.map(item => [item.itemName, item.count.toString(), item.unit, item.category]),
     ];
     const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -48,7 +48,7 @@ export default function ManagerShipmentView() {
 
   if (!shipment) {
     return (
-      <div className="size-full flex items-center justify-center" style={{ backgroundColor: '#FDFFEC' }}>
+      <div className="size-full flex items-center justify-center" style={{ backgroundColor: '#FFFFFF' }}>
         <p>Shipment not found</p>
       </div>
     );
@@ -60,16 +60,16 @@ export default function ManagerShipmentView() {
       : (entries.find(e => e.volunteerName === activeTab)?.items ?? []);
 
   return (
-    <div className="size-full flex flex-col" style={{ backgroundColor: '#FDFFEC' }}>
+    <div className="size-full flex flex-col" style={{ backgroundColor: '#FFFFFF' }}>
 
       {/* ── Header ── */}
-      <div className="flex items-center justify-between p-4" style={{ backgroundColor: '#F6F6F6', borderBottom: '1px solid #E0E0E0' }}>
+      <div className="flex items-center justify-between p-4" style={{ backgroundColor: '#FFFFFF', borderBottom: '1px solid #E0E0E0' }}>
         <button
           onClick={() => navigate('/manager')}
-          className="flex items-center justify-center w-12 h-12 rounded-full hover:opacity-70"
-          style={{ backgroundColor: '#BDBDBD', color: '#fff', fontSize: 22 }}
+          className="flex items-center justify-center w-10 h-10 hover:opacity-70"
+          style={{ backgroundColor: '#BDBDBD', color: '#fff', fontSize: 18, borderRadius: 6 }}
         >
-          {'<'}
+          {'←'}
         </button>
 
         <div className="text-center">
@@ -78,7 +78,7 @@ export default function ManagerShipmentView() {
         </div>
 
         <div className="flex flex-col items-center cursor-pointer" onClick={() => navigate('/profile')}>
-          <Avatar className="w-16 h-16" style={{ backgroundColor: '#BDBDBD' }}>
+          <Avatar className="w-12 h-12" style={{ backgroundColor: '#BDBDBD' }}>
             <AvatarFallback className="text-white" style={{ backgroundColor: '#BDBDBD' }}>{initials}</AvatarFallback>
           </Avatar>
           <span className="text-sm mt-1" style={{ color: '#030303' }}>Manager</span>
@@ -86,11 +86,11 @@ export default function ManagerShipmentView() {
       </div>
 
       {/* ── Column headers ── */}
-      <div className="flex" style={{ backgroundColor: '#E0E0E0' }}>
-        <div className="w-44 p-3 text-sm font-medium">Items</div>
-        <div className="w-24 p-3 text-sm font-medium">Count</div>
-        <div className="w-24 p-3 text-sm font-medium">Units</div>
-        <div className="flex-1 p-3 text-sm font-medium">Category</div>
+      <div className="flex" style={{ backgroundColor: '#EEF0F3', borderBottom: '1px solid #E0E0E0' }}>
+        <div className="w-44 p-3 text-sm font-medium" style={{ color: '#3B3B3B' }}>Items</div>
+        <div className="w-24 p-3 text-sm font-medium" style={{ color: '#3B3B3B' }}>Count</div>
+        <div className="w-24 p-3 text-sm font-medium" style={{ color: '#3B3B3B' }}>Units</div>
+        <div className="flex-1 p-3 text-sm font-medium" style={{ color: '#3B3B3B' }}>Category</div>
       </div>
 
       {/* ── Rows ── */}
@@ -106,7 +106,7 @@ export default function ManagerShipmentView() {
                 <div
                   key={i}
                   className="flex"
-                  style={{ borderBottom: '1px solid #EEEEEE', backgroundColor: i % 2 === 0 ? '#FDFFEC' : '#F6F6F6' }}
+                  style={{ borderBottom: '1px solid #F0F0F0', backgroundColor: '#FFFFFF' }}
                 >
                   <div className="w-44 p-3 text-sm">{item.itemName}</div>
                   <div className="w-24 p-3 text-sm">{item.count}</div>
@@ -121,16 +121,16 @@ export default function ManagerShipmentView() {
       </div>
 
       {/* ── Bottom: volunteer tabs + export ── */}
-      <div style={{ borderTop: '1px solid #EEEEEE' }}>
+      <div style={{ borderTop: '1px solid #E0E0E0' }}>
         <ScrollArea orientation="horizontal" className="w-full">
-          <div className="flex min-w-max" style={{ backgroundColor: '#EEEEEE' }}>
+          <div className="flex min-w-max" style={{ backgroundColor: '#EEF0F3' }}>
             <button
               onClick={() => setActiveTab('sum')}
               className="px-6 py-3 text-sm whitespace-nowrap"
               style={{
-                backgroundColor: activeTab === 'sum' ? '#E0E0E0' : '#EEEEEE',
+                backgroundColor: activeTab === 'sum' ? '#E0E4E8' : 'transparent',
                 fontWeight: activeTab === 'sum' ? 600 : 400,
-                borderRight: '1px solid #BDBDBD',
+                borderRight: '1px solid #D8DCDF',
               }}
             >
               Sum Sheet
@@ -141,9 +141,9 @@ export default function ManagerShipmentView() {
                 onClick={() => setActiveTab(entry.volunteerName)}
                 className="px-6 py-3 text-sm whitespace-nowrap"
                 style={{
-                  backgroundColor: activeTab === entry.volunteerName ? '#E0E0E0' : '#EEEEEE',
+                  backgroundColor: activeTab === entry.volunteerName ? '#E0E4E8' : 'transparent',
                   fontWeight: activeTab === entry.volunteerName ? 600 : 400,
-                  borderRight: '1px solid #BDBDBD',
+                  borderRight: '1px solid #D8DCDF',
                 }}
               >
                 {entry.volunteerName}
@@ -156,10 +156,10 @@ export default function ManagerShipmentView() {
         <div className="p-4">
           <Button
             onClick={handleExport}
-            className="w-full h-14 text-black hover:opacity-80 font-normal text-xl"
-            style={{ backgroundColor: '#E0E0E0' }}
+            className="w-full h-14 text-white hover:opacity-80 font-normal text-xl"
+            style={{ backgroundColor: '#FAA308' }}
           >
-            Export CSV
+            Export
           </Button>
         </div>
       </div>

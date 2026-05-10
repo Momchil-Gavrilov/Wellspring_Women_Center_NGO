@@ -22,7 +22,7 @@ export default function ProfileScreen() {
     (user?.role.charAt(0).toUpperCase() ?? '') + (user?.role.slice(1) ?? '') || 'Position';
 
   return (
-    <div className="size-full flex flex-col" style={{ backgroundColor: '#FDFFEC' }}>
+    <div className="size-full flex flex-col" style={{ backgroundColor: '#FFFFFF' }}>
       {/* No heavy header — matches Figma which has no header bar on the profile screen */}
       <div className="flex-1 flex flex-col items-center justify-center px-8 py-16 gap-6">
         <Avatar className="w-44 h-44" style={{ backgroundColor: '#BDBDBD' }}>

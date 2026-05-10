@@ -4,60 +4,68 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { useUser } from '../context/UserContext';
 
-function Star({ top, left, right, bottom, size, color }: {
-  top?: string; left?: string; right?: string; bottom?: string;
-  size: number; color: string;
-}) {
-  return (
-    <span
-      className="absolute select-none pointer-events-none leading-none"
-      style={{ top, left, right, bottom, fontSize: size, color, fontFamily: 'serif' }}
-    >
-      ✱
-    </span>
-  );
-}
-
 export default function OnboardingScreen() {
   const navigate = useNavigate();
   const { setUser } = useUser();
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName]   = useState('');
+  const [password, setPassword]   = useState('');
+
+  const isValid = firstName.trim() && lastName.trim() && password.trim();
 
   const handleProceed = () => {
-    if (!name) return;
-    setUser({ name, role: 'volunteer' });
+    if (!isValid) return;
+    const fullName = `${firstName.trim()} ${lastName.trim()}`;
+    setUser({ name: fullName, role: 'volunteer' });
     navigate('/volunteer');
   };
 
   return (
-    <div className="size-full flex items-center justify-center p-8 relative overflow-hidden"
-      style={{ backgroundColor: '#FDFFEC' }}>
+    <div className="size-full flex items-center justify-center p-8"
+      style={{ backgroundColor: '#FFFFFF' }}>
 
-      {/* Decorative stars */}
-      <Star top="5%"  left="14%" size={96} color="#FAA308" />
-      <Star top="3%"  right="8%" size={96} color="#FAA308" />
-      <Star top="18%" left="4%"  size={48} color="#FAA308" />
-      <Star top="2%"  left="4%"  size={48} color="#9ABB39" />
-      <Star top="15%" left="30%" size={64} color="#9ABB39" />
-
-      <div className="w-full max-w-sm space-y-8 relative z-10">
+      <div className="w-full max-w-sm space-y-8">
         <div className="text-center">
-          <h1 className="font-normal mb-3" style={{ fontSize: 32, color: '#000' }}>
-            Welcome to Wellspring
+          <h1 className="font-normal mb-2" style={{ fontSize: 32, color: '#000' }}>
+            Create Account
           </h1>
           <p style={{ fontSize: 15, color: '#6B6B6B' }}>
-            Please enter your name to get started
+            Sign up to get started
           </p>
         </div>
 
-        <div className="space-y-5">
+        <div className="space-y-4">
           <Input
             type="text"
             inputMode="text"
-            autoComplete="name"
-            placeholder="Enter your full name"
-            value={name}
-            onChange={e => setName(e.target.value)}
+            autoComplete="given-name"
+            placeholder="First Name"
+            value={firstName}
+            onChange={e => setFirstName(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleProceed()}
+            className="border-none h-14"
+            style={{ backgroundColor: '#EEEEEE', fontSize: 15 }}
+          />
+
+          <Input
+            type="text"
+            inputMode="text"
+            autoComplete="family-name"
+            placeholder="Last Name"
+            value={lastName}
+            onChange={e => setLastName(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleProceed()}
+            className="border-none h-14"
+            style={{ backgroundColor: '#EEEEEE', fontSize: 15 }}
+          />
+
+          <Input
+            type="password"
+            inputMode="text"
+            autoComplete="new-password"
+            placeholder="Password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleProceed()}
             className="border-none h-14"
             style={{ backgroundColor: '#EEEEEE', fontSize: 15 }}
@@ -65,12 +73,20 @@ export default function OnboardingScreen() {
 
           <Button
             onClick={handleProceed}
-            disabled={!name}
-            className="w-full h-14 text-black hover:opacity-80 disabled:opacity-50 font-normal text-2xl"
+            disabled={!isValid}
+            className="w-full h-14 text-black hover:opacity-80 disabled:opacity-50 font-normal text-xl"
             style={{ backgroundColor: '#E0E0E0' }}
           >
-            Proceed
+            Create Account
           </Button>
+
+          <button
+            onClick={() => navigate('/')}
+            className="w-full text-center text-sm underline"
+            style={{ color: '#6B6B6B' }}
+          >
+            Already have an account? Log In
+          </button>
         </div>
       </div>
     </div>

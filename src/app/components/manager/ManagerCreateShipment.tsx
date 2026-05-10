@@ -32,16 +32,16 @@ export default function ManagerCreateShipment() {
     .toUpperCase() || 'M';
 
   return (
-    <div className="size-full flex flex-col" style={{ backgroundColor: '#FDFFEC' }}>
+    <div className="size-full flex flex-col" style={{ backgroundColor: '#FFFFFF' }}>
 
       {/* ── Header ── */}
-      <div className="flex items-center justify-between p-4" style={{ backgroundColor: '#F6F6F6', borderBottom: '1px solid #E0E0E0' }}>
+      <div className="flex items-center justify-between p-4" style={{ backgroundColor: '#FFFFFF', borderBottom: '1px solid #E0E0E0' }}>
         <button
           onClick={() => navigate('/manager')}
-          className="flex items-center justify-center w-12 h-12 rounded-full hover:opacity-70"
-          style={{ backgroundColor: '#BDBDBD', color: '#fff', fontSize: 22 }}
+          className="flex items-center justify-center w-10 h-10 hover:opacity-70"
+          style={{ backgroundColor: '#BDBDBD', color: '#fff', fontSize: 18, borderRadius: 6 }}
         >
-          {'<'}
+          {'←'}
         </button>
 
         <div className="flex flex-col items-center cursor-pointer" onClick={() => navigate('/profile')}>

@@ -38,19 +38,11 @@ export default function LoginScreen() {
 
   return (
     <div className="size-full flex items-center justify-center relative overflow-hidden"
-      style={{ backgroundColor: '#FDFFEC' }}>
+      style={{ backgroundColor: '#FFFFFF' }}>
 
-      {/* Decorative stars – matching Figma asterisk placement */}
-      <Star top="5%" left="14%" size={96} color="#FAA308" opacity={1} />
-      <Star top="3%" right="8%" size={96} color="#FAA308" opacity={1} />
-      <Star top="0"  right="22%" size={96} color="#FAA308" opacity={1} />
-      <Star top="10%" left="38%" size={96} color="#FAA308" opacity={1} />
-      <Star top="18%" left="4%"  size={48} color="#FAA308" opacity={1} />
-      <Star top="28%" right="0"  size={48} color="#FAA308" opacity={1} />
-
-      <Star top="2%"  left="4%"  size={48} color="#9ABB39" opacity={1} />
-      <Star top="15%" left="30%" size={64} color="#9ABB39" opacity={1} />
-      <Star top="1%"  right="0"  size={64} color="#9ABB39" opacity={1} />
+      {/* Decorative stars – minimal, professional */}
+      <Star top="4%" left="6%"   size={56} color="#FAA308" opacity={1} />
+      <Star top="3%" right="6%"  size={56} color="#9ABB39" opacity={1} />
 
       <div className="w-full max-w-sm px-8 relative z-10">
         {/* Title */}

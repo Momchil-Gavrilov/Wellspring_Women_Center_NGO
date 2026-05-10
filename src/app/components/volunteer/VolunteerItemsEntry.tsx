@@ -136,7 +136,6 @@ export default function VolunteerItemsEntry() {
     }
 
     setItems(prev => {
-      // Remove trailing empty row so we don't accumulate blank rows
       const nonEmpty = prev.filter(r => r.itemName || r.count);
       const newRows: RowItem[] = parsed.map(p => ({
         itemName: p.itemName,
@@ -159,7 +158,6 @@ export default function VolunteerItemsEntry() {
   const handleItemChange = (index: number, field: keyof RowItem, value: string) => {
     setItems(prev => {
       const updated = prev.map((row, i) => i === index ? { ...row, [field]: value } : row);
-      // Auto-add a new blank row when the last row gets any input
       if (index === prev.length - 1 && value) {
         return [...updated, { ...EMPTY_ROW }];
       }
@@ -202,15 +200,15 @@ export default function VolunteerItemsEntry() {
   const initials = user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'V';
 
   return (
-    <div className="size-full flex flex-col" style={{ backgroundColor: '#FDFFEC' }}>
+    <div className="size-full flex flex-col" style={{ backgroundColor: '#FFFFFF' }}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4" style={{ backgroundColor: '#F6F6F6', borderBottom: '1px solid #E0E0E0' }}>
+      <div className="flex items-center justify-between p-4" style={{ backgroundColor: '#FFFFFF', borderBottom: '1px solid #E0E0E0' }}>
         <button
           onClick={() => navigate('/volunteer')}
-          className="flex items-center justify-center w-12 h-12 rounded-full hover:opacity-70"
-          style={{ backgroundColor: '#BDBDBD', color: '#fff', fontSize: 22 }}
+          className="flex items-center justify-center w-10 h-10 hover:opacity-70"
+          style={{ backgroundColor: '#BDBDBD', color: '#fff', fontSize: 18, borderRadius: 6 }}
         >
-          {'<'}
+          {'←'}
         </button>
 
         <div className="text-center">
@@ -219,7 +217,7 @@ export default function VolunteerItemsEntry() {
         </div>
 
         <div className="flex flex-col items-center cursor-pointer" onClick={() => navigate('/profile')}>
-          <Avatar className="w-14 h-14" style={{ backgroundColor: '#BDBDBD' }}>
+          <Avatar className="w-12 h-12" style={{ backgroundColor: '#BDBDBD' }}>
             <AvatarFallback className="text-white" style={{ backgroundColor: '#BDBDBD' }}>{initials}</AvatarFallback>
           </Avatar>
           <span className="text-xs mt-1" style={{ color: '#1F1F1F' }}>Volunteer</span>
@@ -228,8 +226,13 @@ export default function VolunteerItemsEntry() {
 
       {/* Column headers */}
       <div
-        className="grid gap-px text-sm font-medium px-2 py-2 sticky top-0 z-10"
-        style={{ gridTemplateColumns: '2fr 1fr 1fr 1.5fr 2rem', backgroundColor: '#E0E0E0', color: '#1F1F1F' }}
+        className="grid text-sm font-medium px-2 py-3"
+        style={{
+          gridTemplateColumns: '2fr 1fr 1fr 1.5fr 2rem',
+          backgroundColor: '#EEF0F3',
+          color: '#3B3B3B',
+          borderBottom: '1px solid #E0E0E0',
+        }}
       >
         <div className="pl-2">Item</div>
         <div>Count</div>
@@ -240,19 +243,23 @@ export default function VolunteerItemsEntry() {
 
       {/* Rows */}
       <ScrollArea className="flex-1">
-        <div className="flex flex-col gap-px bg-gray-200 pb-2">
+        <div className="flex flex-col">
           {items.map((row, index) => (
             <div
               key={index}
-              className="grid gap-px bg-white"
-              style={{ gridTemplateColumns: '2fr 1fr 1fr 1.5fr 2rem' }}
+              className="grid"
+              style={{
+                gridTemplateColumns: '2fr 1fr 1fr 1.5fr 2rem',
+                borderBottom: '1px solid #F0F0F0',
+                backgroundColor: '#FFFFFF',
+              }}
             >
               <Input
                 type="text"
                 inputMode="text"
                 value={row.itemName}
                 onChange={e => handleItemChange(index, 'itemName', e.target.value)}
-                className="border-none h-11"
+                className="border-none h-11 rounded-none bg-transparent"
                 placeholder="Item name"
               />
               <Input
@@ -260,7 +267,7 @@ export default function VolunteerItemsEntry() {
                 inputMode="decimal"
                 value={row.count}
                 onChange={e => handleItemChange(index, 'count', e.target.value)}
-                className="border-none h-11"
+                className="border-none h-11 rounded-none bg-transparent"
                 placeholder="0"
               />
               <Input
@@ -268,7 +275,7 @@ export default function VolunteerItemsEntry() {
                 inputMode="text"
                 value={row.unit}
                 onChange={e => handleItemChange(index, 'unit', e.target.value)}
-                className="border-none h-11"
+                className="border-none h-11 rounded-none bg-transparent"
                 placeholder="count"
               />
               <Input
@@ -276,7 +283,7 @@ export default function VolunteerItemsEntry() {
                 inputMode="text"
                 value={row.category}
                 onChange={e => handleItemChange(index, 'category', e.target.value)}
-                className="border-none h-11"
+                className="border-none h-11 rounded-none bg-transparent"
                 placeholder="General"
               />
               <button
@@ -302,40 +309,41 @@ export default function VolunteerItemsEntry() {
         </div>
       )}
 
-      {/* Footer: mic + submit */}
-      <div className="p-4 bg-white border-t">
+      {/* Footer: info box + mic + submit */}
+      <div className="p-5 bg-white border-t border-gray-100">
         {!supported && (
           <p className="text-xs text-center mb-2" style={{ color: '#6B6B6B' }}>
             Speech recognition not available in this browser.
           </p>
         )}
 
-        {/* Help tooltip */}
-        <p className="text-xs text-center mb-3" style={{ color: '#6B6B6B' }}>
-          Say the item and amount — e.g. <em>"24 apples"</em> or <em>"5 cans of soup"</em>
-        </p>
+        {/* Info box */}
+        <div
+          className="mx-auto mb-5 px-5 py-4 text-sm text-center max-w-xs"
+          style={{ backgroundColor: '#3D5166', color: '#FFFFFF', borderRadius: 8 }}
+        >
+          To use speech-to-text, simply name the item and the amount! The system will fill in the rest.
+        </div>
 
-        <div className="flex items-center justify-center gap-6">
+        <div className="flex items-center justify-center gap-8">
           <Button
             onClick={handleMicClick}
             disabled={!supported}
             size="icon"
-            className="w-20 h-20 rounded-full transition-colors"
-            style={{
-              backgroundColor: isListening ? '#d4183d' : '#FAA308',
-            }}
+            className="w-16 h-16 rounded-full transition-colors"
+            style={{ backgroundColor: isListening ? '#d4183d' : '#3D5166' }}
           >
-            {isListening ? <MicOff className="w-8 h-8 text-white" /> : <Mic className="w-8 h-8 text-white" />}
+            {isListening ? <MicOff className="w-6 h-6 text-white" /> : <Mic className="w-6 h-6 text-white" />}
           </Button>
 
           <Button
             onClick={handleSubmit}
             disabled={saving}
             size="icon"
-            className="w-20 h-20 rounded-full"
-            style={{ backgroundColor: '#9ABB39' }}
+            className="w-16 h-16 rounded-full"
+            style={{ backgroundColor: '#BDBDBD' }}
           >
-            <Check className="w-8 h-8 text-white" />
+            <Check className="w-6 h-6 text-white" />
           </Button>
         </div>
       </div>
