@@ -1,0 +1,16 @@
+/* Ensure touch devices trigger keyboards properly */
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+  touch-action: manipulation;
+}
+
+/* Prevent zoom on input focus for iOS/mobile devices while maintaining accessibility */
+@media screen and (max-width: 768px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
