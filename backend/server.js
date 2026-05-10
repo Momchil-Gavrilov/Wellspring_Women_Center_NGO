@@ -1,24 +1,9 @@
+// Local development entry point — not used by Vercel (see api/index.js)
 require('dotenv').config();
-const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');
+const app = require('./app');
 
-const shipmentsRouter = require('./routes/shipments');
-const catalogRouter = require('./routes/catalog');
-const pricingRouter = require('./routes/pricing');
-
-const app = express();
 const PORT = process.env.PORT || 5000;
-
-app.use(cors());
-app.use(express.json());
-
-// Routes
-app.use('/api/shipments', shipmentsRouter);
-app.use('/api/catalog', catalogRouter);
-app.use('/api/pricing', pricingRouter);
-
-app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 
 mongoose
   .connect(process.env.MONGODB_URI)
