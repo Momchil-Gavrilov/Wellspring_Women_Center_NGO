@@ -7,9 +7,9 @@ import { ScrollArea } from '../ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
 import { useUser } from '../../context/UserContext';
 import { useData } from '../../context/DataContext';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import type { EntryItem } from '../../../services/api';
+import type { EntryItem, CatalogItem } from '../../../services/api';
 
 interface AllItem extends EntryItem {
   volunteerName: string;
@@ -17,50 +17,88 @@ interface AllItem extends EntryItem {
   shipmentDate: string;
 }
 
+type DialogMode = 'create' | 'approve' | 'edit-catalog';
+
 export default function ManagerLogItems() {
   const navigate = useNavigate();
   const { user } = useUser();
-  const { shipments, catalogItems, addCatalogItem, getShipmentEntries } = useData();
+  const {
+    shipments, catalogItems,
+    addCatalogItem, updateCatalogItem, removeCatalogItem,
+    getShipmentEntries,
+  } = useData();
 
   const [allItems, setAllItems] = useState<AllItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [newItemName, setNewItemName] = useState('');
-  const [newItemUnit, setNewItemUnit] = useState('');
-  const [newItemCategory, setNewItemCategory] = useState('');
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<AllItem | null>(null);
 
-  // Fetch all entries across all shipments
+  // ── Dialog state ─────────────────────────────────────────────────────────────
+  const [dialogOpen, setDialogOpen]               = useState(false);
+  const [dialogMode, setDialogMode]               = useState<DialogMode>('create');
+  const [pendingVolunteerItem, setPendingVolunteerItem] = useState<AllItem | null>(null);
+  const [editingCatalogItem, setEditingCatalogItem]    = useState<CatalogItem | null>(null);
+  const [newItemName, setNewItemName]             = useState('');
+  const [newItemUnit, setNewItemUnit]             = useState('');
+  const [newItemCategory, setNewItemCategory]     = useState('');
+  const [submitting, setSubmitting]               = useState(false);
+
+  // ── Fetch all volunteer entries across all shipments ──────────────────────
   useEffect(() => {
     if (shipments.length === 0) return;
     Promise.all(
       shipments.map(s =>
-        getShipmentEntries(s.id).then(entries =>
-          entries.flatMap(entry =>
-            entry.items.map(item => ({
-              ...item,
-              volunteerName: entry.volunteerName,
-              shipmentName: s.name,
-              shipmentDate: s.date,
-            }))
+        getShipmentEntries(s.id)
+          .then(entries =>
+            entries.flatMap(entry =>
+              entry.items.map(item => ({
+                ...item,
+                volunteerName: entry.volunteerName,
+                shipmentName: s.name,
+                shipmentDate: s.date,
+              }))
+            )
           )
-        ).catch(() => [] as AllItem[])
+          .catch(() => [] as AllItem[])
       )
     ).then(results => setAllItems(results.flat()));
   }, [shipments, getShipmentEntries]);
 
-  const handleBack = () => navigate('/manager');
-  const handleProfileClick = () => navigate('/profile');
-
-  const handleEditItem = (item: AllItem) => {
-    setSelectedItem(item);
+  // ── Dialog openers ────────────────────────────────────────────────────────
+  const openApproveDialog = (item: AllItem) => {
+    setPendingVolunteerItem(item);
+    setEditingCatalogItem(null);
     setNewItemName(item.itemName);
     setNewItemUnit(item.unit);
     setNewItemCategory(item.category);
+    setDialogMode('approve');
     setDialogOpen(true);
   };
 
+  const openEditCatalogDialog = (item: CatalogItem) => {
+    setEditingCatalogItem(item);
+    setPendingVolunteerItem(null);
+    setNewItemName(item.name);
+    setNewItemUnit(item.unit);
+    setNewItemCategory(item.category);
+    setDialogMode('edit-catalog');
+    setDialogOpen(true);
+  };
+
+  const openCreateDialog = () => {
+    setEditingCatalogItem(null);
+    setPendingVolunteerItem(null);
+    setNewItemName('');
+    setNewItemUnit('');
+    setNewItemCategory('');
+    setDialogMode('create');
+    setDialogOpen(true);
+  };
+
+  // ── Quick approve (checkmark button — no dialog) ───────────────────────────
   const handleApproveItem = async (item: AllItem) => {
+    if (catalogItems.some(c => c.name.toLowerCase() === item.itemName.toLowerCase())) {
+      toast.info(`${item.itemName} is already in the catalog.`);
+      return;
+    }
     try {
       await addCatalogItem({
         name: item.itemName,
@@ -75,44 +113,70 @@ export default function ManagerLogItems() {
     }
   };
 
-  const handleCreateNew = () => {
-    setSelectedItem(null);
-    setNewItemName('');
-    setNewItemUnit('');
-    setNewItemCategory('');
-    setDialogOpen(true);
+  // ── Delete catalog item ───────────────────────────────────────────────────
+  const handleDeleteCatalogItem = async (item: CatalogItem) => {
+    try {
+      await removeCatalogItem(item.id);
+      toast.success(`${item.name} removed from catalog.`);
+    } catch {
+      toast.error('Failed to delete item. Please try again.');
+    }
   };
 
-  const handleCreateItem = async () => {
-    if (!newItemName || !newItemUnit || !newItemCategory) {
-      toast.error('Please fill in all fields');
+  // ── Unified dialog save ────────────────────────────────────────────────────
+  const handleSave = async () => {
+    if (!newItemName.trim() || !newItemUnit.trim() || !newItemCategory.trim()) {
+      toast.error('Please fill in all fields.');
       return;
     }
+    if (submitting) return; // block double-click
+    setSubmitting(true);
+
     try {
-      await addCatalogItem({
-        name: newItemName,
-        unit: newItemUnit,
-        category: newItemCategory,
-        description: `Added by ${user?.name || 'Manager'}`,
-        postedBy: user?.name || 'Manager',
-      });
-      toast.success('Item added to catalog!');
-      setNewItemName('');
-      setNewItemUnit('');
-      setNewItemCategory('');
+      if (dialogMode === 'edit-catalog' && editingCatalogItem) {
+        // Update existing catalog item
+        await updateCatalogItem(editingCatalogItem.id, {
+          name: newItemName.trim(),
+          unit: newItemUnit.trim(),
+          category: newItemCategory.trim(),
+        });
+        toast.success('Item updated!');
+      } else {
+        // Create or approve — both add a new catalog entry
+        if (catalogItems.some(c => c.name.toLowerCase() === newItemName.trim().toLowerCase())) {
+          toast.info(`${newItemName.trim()} is already in the catalog.`);
+          setDialogOpen(false);
+          return;
+        }
+        await addCatalogItem({
+          name: newItemName.trim(),
+          unit: newItemUnit.trim(),
+          category: newItemCategory.trim(),
+          description:
+            dialogMode === 'approve' && pendingVolunteerItem
+              ? `Logged by ${pendingVolunteerItem.volunteerName}`
+              : `Added by ${user?.name || 'Manager'}`,
+          postedBy:
+            dialogMode === 'approve' && pendingVolunteerItem
+              ? pendingVolunteerItem.volunteerName
+              : user?.name || 'Manager',
+        });
+        toast.success(
+          dialogMode === 'approve'
+            ? 'Item approved and added to catalog!'
+            : 'Item added to catalog!'
+        );
+      }
       setDialogOpen(false);
-      setSelectedItem(null);
     } catch {
-      toast.error('Failed to add item. Please try again.');
+      toast.error('Failed to save. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const initials = user?.name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase() || 'M';
-
+  // ── Derived lists ──────────────────────────────────────────────────────────
+  const initials = user?.name.split(' ').map(n => n[0]).join('').toUpperCase() || 'M';
   const catalogItemNames = catalogItems.map(c => c.name.toLowerCase());
   const unapprovedItems = allItems.filter(
     item =>
@@ -120,13 +184,24 @@ export default function ManagerLogItems() {
       item.itemName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const dialogTitle =
+    dialogMode === 'edit-catalog' ? 'Edit Item'
+    : dialogMode === 'approve'   ? 'Approve Item'
+    : 'New Item';
+
+  const dialogSaveLabel =
+    dialogMode === 'edit-catalog' ? 'Save Changes'
+    : dialogMode === 'approve'   ? 'Add to Catalog'
+    : 'Create';
+
   return (
     <div className="size-full bg-white flex flex-col">
+      {/* Header */}
       <div className="flex items-center justify-between p-4 border-b">
         <Button
           variant="ghost"
           size="icon"
-          onClick={handleBack}
+          onClick={() => navigate('/manager')}
           className="w-12 h-12 hover:opacity-80"
           style={{ backgroundColor: '#9B9B9B' }}
         >
@@ -135,7 +210,7 @@ export default function ManagerLogItems() {
 
         <h1 className="text-2xl" style={{ color: '#1F1F1F' }}>Items</h1>
 
-        <div className="flex flex-col items-center cursor-pointer" onClick={handleProfileClick}>
+        <div className="flex flex-col items-center cursor-pointer" onClick={() => navigate('/profile')}>
           <Avatar className="w-16 h-16" style={{ backgroundColor: '#9B9B9B' }}>
             <AvatarFallback className="text-white" style={{ backgroundColor: '#9B9B9B' }}>
               {initials}
@@ -145,20 +220,24 @@ export default function ManagerLogItems() {
         </div>
       </div>
 
+      {/* Search */}
       <div className="p-4">
         <Input
           type="text"
           inputMode="text"
           placeholder="Search items..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={e => setSearchQuery(e.target.value)}
           className="w-full h-12 border-none"
           style={{ backgroundColor: '#E8E8E8' }}
         />
       </div>
 
+      {/* Content */}
       <ScrollArea className="flex-1">
         <div className="px-6 pb-6 space-y-8">
+
+          {/* ── Volunteer Additions ── */}
           {unapprovedItems.length > 0 && (
             <div>
               <h2 className="text-lg mb-4 pb-2 border-b border-gray-900">Volunteer Additions</h2>
@@ -181,7 +260,7 @@ export default function ManagerLogItems() {
                             Posted by {item.volunteerName}
                           </span>
                           <Button
-                            onClick={() => handleEditItem(item)}
+                            onClick={() => openApproveDialog(item)}
                             variant="ghost"
                             size="sm"
                             className="h-8 px-3 text-black hover:opacity-80"
@@ -210,6 +289,7 @@ export default function ManagerLogItems() {
             </div>
           )}
 
+          {/* ── Catalog of Items ── */}
           <div>
             <h2 className="text-lg mb-4 pb-2 border-b border-gray-900">Catalog of Items</h2>
             <div className="space-y-4">
@@ -229,10 +309,35 @@ export default function ManagerLogItems() {
                 return Object.entries(grouped).map(([letter, items]) => (
                   <div key={letter}>
                     <h3 className="text-2xl font-bold mb-3">{letter}</h3>
-                    {items.map((item, index) => (
-                      <div key={index} className="mb-4">
-                        <h4 className="font-medium">{item.name}</h4>
-                        <p className="text-sm text-gray-600">{item.description}</p>
+                    {items.map(item => (
+                      <div key={item.id} className="mb-4 flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium">{item.name}</h4>
+                          <p className="text-sm text-gray-600">{item.description}</p>
+                          <p className="text-xs text-gray-400">{item.unit} · {item.category}</p>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <Button
+                            onClick={() => openEditCatalogDialog(item)}
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 hover:opacity-80"
+                            style={{ backgroundColor: '#C4C4C4' }}
+                            title="Edit item"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            onClick={() => handleDeleteCatalogItem(item)}
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-white hover:opacity-80"
+                            style={{ backgroundColor: '#E57373' }}
+                            title="Delete item"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -246,9 +351,10 @@ export default function ManagerLogItems() {
         </div>
       </ScrollArea>
 
+      {/* Footer */}
       <div className="p-4 border-t">
         <Button
-          onClick={handleCreateNew}
+          onClick={openCreateDialog}
           className="w-full h-16 text-white text-xl hover:opacity-90"
           style={{ backgroundColor: '#F5A623' }}
         >
@@ -256,12 +362,11 @@ export default function ManagerLogItems() {
         </Button>
       </div>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {/* ── Dialog (create / approve / edit-catalog) ── */}
+      <Dialog open={dialogOpen} onOpenChange={open => { if (!submitting) setDialogOpen(open); }}>
         <DialogContent className="bg-gray-200">
           <DialogHeader>
-            <DialogTitle className="text-3xl text-center mb-6">
-              {selectedItem ? 'Edit Item' : 'New Item'}
-            </DialogTitle>
+            <DialogTitle className="text-3xl text-center mb-6">{dialogTitle}</DialogTitle>
             <DialogDescription className="sr-only">
               Add or edit an item in the catalog
             </DialogDescription>
@@ -273,7 +378,7 @@ export default function ManagerLogItems() {
                 type="text"
                 inputMode="text"
                 value={newItemName}
-                onChange={(e) => setNewItemName(e.target.value)}
+                onChange={e => setNewItemName(e.target.value)}
                 className="flex-1 bg-gray-300 border-none h-12"
               />
             </div>
@@ -283,7 +388,7 @@ export default function ManagerLogItems() {
                 type="text"
                 inputMode="text"
                 value={newItemUnit}
-                onChange={(e) => setNewItemUnit(e.target.value)}
+                onChange={e => setNewItemUnit(e.target.value)}
                 className="flex-1 bg-gray-300 border-none h-12"
               />
             </div>
@@ -293,16 +398,17 @@ export default function ManagerLogItems() {
                 type="text"
                 inputMode="text"
                 value={newItemCategory}
-                onChange={(e) => setNewItemCategory(e.target.value)}
+                onChange={e => setNewItemCategory(e.target.value)}
                 className="flex-1 bg-gray-300 border-none h-12"
               />
             </div>
             <Button
-              onClick={handleCreateItem}
-              className="w-full h-14 hover:opacity-90 text-white text-xl"
+              onClick={handleSave}
+              disabled={submitting}
+              className="w-full h-14 hover:opacity-90 text-white text-xl disabled:opacity-50"
               style={{ backgroundColor: '#9B9B9B' }}
             >
-              {selectedItem ? 'Save' : 'Create'}
+              {submitting ? 'Saving…' : dialogSaveLabel}
             </Button>
           </div>
         </DialogContent>

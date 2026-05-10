@@ -119,6 +119,44 @@ export default function BookkeeperMasterSheet() {
     setActiveSubTab('sum');
   };
 
+  const handleExport = () => {
+    const headers = showPriceColumn
+      ? ['Items', 'Count', 'Units', 'Category', '$/Unit']
+      : ['Items', 'Count', 'Units', 'Category'];
+
+    const rows = displayItems.map(item => {
+      const price = localPrices[item.itemName.toLowerCase()] ?? '';
+      return showPriceColumn
+        ? [item.itemName, item.count, item.unit, item.category, price]
+        : [item.itemName, item.count, item.unit, item.category];
+    });
+
+    const csvContent = [headers, ...rows]
+      .map(row =>
+        row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+      )
+      .join('\n');
+
+    // Build a descriptive filename
+    let filename = 'master';
+    if (activeTab !== 'master') {
+      const shipName = shipmentsInRange.find(s => s.id === activeTab)?.name ?? activeTab;
+      filename = activeSubTab === 'sum' ? `${shipName}-sum` : `${shipName}-${activeSubTab}`;
+    }
+    if (from && to) filename += `_${from}_to_${to}`;
+    filename += '.csv';
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const handleSavePrice = async () => {
     const entries = Object.entries(localPrices).filter(([, v]) => v !== '' && !isNaN(parseFloat(v)));
     if (entries.length === 0) { toast.error('No prices to save.'); return; }
@@ -323,12 +361,20 @@ export default function BookkeeperMasterSheet() {
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
 
-        <div className="p-4">
+        <div className="p-4 flex gap-3">
           <Button
             onClick={handleSavePrice}
-            className="w-full h-16 bg-gray-300 hover:bg-gray-400 text-black"
+            className="flex-1 h-16 bg-gray-300 hover:bg-gray-400 text-black"
           >
             Save Prices
+          </Button>
+          <Button
+            onClick={handleExport}
+            disabled={displayItems.length === 0}
+            className="flex-1 h-16 text-white hover:opacity-90 disabled:opacity-50"
+            style={{ backgroundColor: '#9ABB39' }}
+          >
+            Export
           </Button>
         </div>
       </div>
