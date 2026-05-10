@@ -4,6 +4,7 @@
     { "src": "/api/shipments(.*)",   "dest": "/api/shipments" },
     { "src": "/api/catalog(.*)",     "dest": "/api/catalog"   },
     { "src": "/api/pricing(.*)",     "dest": "/api/pricing"   },
+    { "handle": "filesystem" },
     { "src": "/(.*)",                "dest": "/index.html"    }
   ]
 }
