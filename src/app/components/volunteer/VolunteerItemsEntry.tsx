@@ -91,7 +91,7 @@ export default function VolunteerItemsEntry() {
   const navigate = useNavigate();
   const { shipmentId } = useParams<{ shipmentId: string }>();
   const { user, addRecentlyViewed } = useUser();
-  const { shipments, saveVolunteerEntry } = useData();
+  const { shipments, saveVolunteerEntry, getShipmentEntries } = useData();
 
   const [items, setItems] = useState<RowItem[]>([{ ...EMPTY_ROW }]);
   const [saving, setSaving] = useState(false);
@@ -101,6 +101,28 @@ export default function VolunteerItemsEntry() {
   useEffect(() => {
     if (shipment) addRecentlyViewed({ id: shipment.id, name: shipment.name });
   }, [shipment, addRecentlyViewed]);
+
+  // Pre-populate rows with the current volunteer's existing entries for this shipment
+  useEffect(() => {
+    if (!shipmentId || !user?.name) return;
+    getShipmentEntries(shipmentId)
+      .then(allEntries => {
+        const myEntry = allEntries.find(e => e.volunteerName === user.name);
+        if (myEntry && myEntry.items.length > 0) {
+          setItems([
+            ...myEntry.items.map(item => ({
+              itemName: item.itemName,
+              count: String(item.count),
+              unit: item.unit,
+              category: item.category,
+            })),
+            { ...EMPTY_ROW },
+          ]);
+        }
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shipmentId, user?.name]);
 
   // ─── STT handler: appends parsed items as new rows ─────────────────────────
   const handleTranscript = useCallback((transcript: string) => {

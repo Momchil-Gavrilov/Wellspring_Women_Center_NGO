@@ -25,7 +25,7 @@ export default function VolunteerSelectShipment() {
 
   const handleRecentClick = (shipmentId: string, shipmentName: string) => {
     addRecentlyViewed({ id: shipmentId, name: shipmentName });
-    navigate(`/volunteer/view/${shipmentId}`);
+    navigate(`/volunteer/items/${shipmentId}`);
   };
 
   const handleBack = () => {
