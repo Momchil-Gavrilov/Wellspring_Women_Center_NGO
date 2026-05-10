@@ -5,39 +5,39 @@ import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { useUser } from '../../context/UserContext';
 import { useData } from '../../context/DataContext';
 import { ArrowLeft } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import type { EntryItem } from '../../../services/api';
 
 export default function VolunteerShipmentView() {
   const navigate = useNavigate();
   const { shipmentId } = useParams();
   const { user, addRecentlyViewed } = useUser();
-  const { shipments } = useData();
+  const { shipments, getShipmentEntries } = useData();
+
+  const [entries, setEntries] = useState<EntryItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const shipment = shipments.find(s => s.id === shipmentId);
 
   useEffect(() => {
-    if (shipment) {
-      addRecentlyViewed({ id: shipment.id, name: shipment.name });
-    }
+    if (shipment) addRecentlyViewed({ id: shipment.id, name: shipment.name });
   }, [shipment, addRecentlyViewed]);
 
-  const handleBack = () => {
-    navigate('/volunteer');
-  };
+  // Load this volunteer's saved entries for the shipment
+  useEffect(() => {
+    if (!shipmentId) return;
+    setLoading(true);
+    getShipmentEntries(shipmentId)
+      .then(allEntries => {
+        // Flatten all volunteer entries into one list for display
+        const items = allEntries.flatMap(e => e.items);
+        setEntries(items);
+      })
+      .catch(() => setEntries([]))
+      .finally(() => setLoading(false));
+  }, [shipmentId, getShipmentEntries]);
 
-  const handleProfileClick = () => {
-    navigate('/profile');
-  };
-
-  const handleAddItems = () => {
-    navigate(`/volunteer/items/${shipmentId}`);
-  };
-
-  const initials = user?.name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase() || 'V';
+  const initials = user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'V';
 
   if (!shipment) {
     return (
@@ -53,7 +53,7 @@ export default function VolunteerShipmentView() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={handleBack}
+          onClick={() => navigate('/volunteer')}
           className="w-12 h-12 hover:opacity-80"
           style={{ backgroundColor: '#9B9B9B' }}
         >
@@ -65,7 +65,7 @@ export default function VolunteerShipmentView() {
           <p className="font-medium">{shipment.name}</p>
         </div>
 
-        <div className="flex flex-col items-center cursor-pointer" onClick={handleProfileClick}>
+        <div className="flex flex-col items-center cursor-pointer" onClick={() => navigate('/profile')}>
           <Avatar className="w-16 h-16" style={{ backgroundColor: '#9B9B9B' }}>
             <AvatarFallback className="text-white" style={{ backgroundColor: '#9B9B9B' }}>{initials}</AvatarFallback>
           </Avatar>
@@ -85,12 +85,12 @@ export default function VolunteerShipmentView() {
       <div className="flex-1 overflow-hidden">
         <ScrollArea className="h-full">
           <div className="divide-y pr-1">
-            {shipment.items.length === 0 ? (
-              <div className="p-8 text-center text-gray-400">
-                No items logged yet
-              </div>
+            {loading ? (
+              <div className="p-8 text-center text-gray-400">Loading…</div>
+            ) : entries.length === 0 ? (
+              <div className="p-8 text-center text-gray-400">No items logged yet</div>
             ) : (
-              shipment.items.map((item, index) => (
+              entries.map((item, index) => (
                 <div key={index} className="flex gap-2 p-4">
                   <div className="w-40">{item.itemName}</div>
                   <div className="w-24">{item.count}</div>
@@ -106,7 +106,7 @@ export default function VolunteerShipmentView() {
 
       <div className="p-4 border-t">
         <Button
-          onClick={handleAddItems}
+          onClick={() => navigate(`/volunteer/items/${shipmentId}`)}
           className="w-full h-16 text-white hover:opacity-90"
           style={{ backgroundColor: '#F5A623' }}
         >

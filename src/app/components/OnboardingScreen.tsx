@@ -4,6 +4,20 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { useUser } from '../context/UserContext';
 
+function Star({ top, left, right, bottom, size, color }: {
+  top?: string; left?: string; right?: string; bottom?: string;
+  size: number; color: string;
+}) {
+  return (
+    <span
+      className="absolute select-none pointer-events-none leading-none"
+      style={{ top, left, right, bottom, fontSize: size, color, fontFamily: 'serif' }}
+    >
+      ✱
+    </span>
+  );
+}
+
 export default function OnboardingScreen() {
   const navigate = useNavigate();
   const { setUser } = useUser();
@@ -11,50 +25,51 @@ export default function OnboardingScreen() {
 
   const handleProceed = () => {
     if (!name) return;
-
     setUser({ name, role: 'volunteer' });
     navigate('/volunteer');
   };
 
   return (
-    <div className="size-full flex items-center justify-center p-8 relative overflow-hidden" style={{ backgroundColor: '#F5F1E8' }}>
-      {/* Decorative flowers */}
-      <div className="absolute top-12 left-12 text-6xl" style={{ color: '#F5A623', opacity: 0.6 }}>✱</div>
-      <div className="absolute top-20 right-24 text-5xl" style={{ color: '#F5A623', opacity: 0.5 }}>✱</div>
-      <div className="absolute top-32 right-16 text-4xl" style={{ color: '#F5A623', opacity: 0.4 }}>✱</div>
-      <div className="absolute bottom-32 left-16 text-5xl" style={{ color: '#F5A623', opacity: 0.5 }}>✱</div>
-      <div className="absolute bottom-24 left-32 text-7xl" style={{ color: '#F5A623', opacity: 0.7 }}>✱</div>
-      <div className="absolute top-40 left-24 text-5xl" style={{ color: '#F5A623', opacity: 0.5 }}>✱</div>
-      <div className="absolute bottom-48 right-32 text-6xl" style={{ color: '#F5A623', opacity: 0.6 }}>✱</div>
-      <div className="absolute top-1/3 left-20 text-4xl" style={{ color: '#B8D35F', opacity: 0.4 }}>✱</div>
-      <div className="absolute top-1/4 right-1/4 text-5xl" style={{ color: '#B8D35F', opacity: 0.3 }}>✱</div>
+    <div className="size-full flex items-center justify-center p-8 relative overflow-hidden"
+      style={{ backgroundColor: '#FDFFEC' }}>
 
-      <div className="w-full max-w-md space-y-8 relative z-10">
+      {/* Decorative stars */}
+      <Star top="5%"  left="14%" size={96} color="#FAA308" />
+      <Star top="3%"  right="8%" size={96} color="#FAA308" />
+      <Star top="18%" left="4%"  size={48} color="#FAA308" />
+      <Star top="2%"  left="4%"  size={48} color="#9ABB39" />
+      <Star top="15%" left="30%" size={64} color="#9ABB39" />
+
+      <div className="w-full max-w-sm space-y-8 relative z-10">
         <div className="text-center">
-          <h1 className="text-4xl mb-4" style={{ color: '#1F1F1F' }}>Welcome to Wellspring</h1>
-          <p style={{ color: '#6B6B6B' }}>Please enter your name to get started</p>
+          <h1 className="font-normal mb-3" style={{ fontFamily: 'Inter, sans-serif', fontSize: 32, color: '#000' }}>
+            Welcome to Wellspring
+          </h1>
+          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 15, color: '#6B6B6B' }}>
+            Please enter your name to get started
+          </p>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-5">
           <Input
             type="text"
             inputMode="text"
             autoComplete="name"
             placeholder="Enter your full name"
             value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleProceed()}
-            className="border-none h-14 text-base"
-            style={{ fontSize: '16px', backgroundColor: '#E8E8E8' }}
+            onChange={e => setName(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleProceed()}
+            className="border-none h-14 rounded-none"
+            style={{ backgroundColor: '#D9D9D9', fontSize: 15 }}
           />
 
           <Button
             onClick={handleProceed}
             disabled={!name}
-            className="w-full h-14 text-white hover:opacity-90 disabled:opacity-50"
-            style={{ backgroundColor: '#F5A623' }}
+            className="w-full h-14 text-black hover:opacity-80 disabled:opacity-50 rounded-none font-normal text-2xl"
+            style={{ backgroundColor: '#CACACA' }}
           >
-            Proceed to Shipment Page
+            Proceed
           </Button>
         </div>
       </div>

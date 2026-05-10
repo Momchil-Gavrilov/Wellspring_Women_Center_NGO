@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback } from '../ui/avatar';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { useUser } from '../../context/UserContext';
 import { useData } from '../../context/DataContext';
-import { ArrowLeft, Mic, Check, MicOff } from 'lucide-react';
+import { Mic, Check, MicOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { parseSpeechToItems } from '../../../utils/speechParser';
 
@@ -204,16 +204,14 @@ export default function VolunteerItemsEntry() {
   return (
     <div className="size-full flex flex-col" style={{ backgroundColor: '#FDFFEC' }}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b bg-white">
-        <Button
-          variant="ghost"
-          size="icon"
+      <div className="flex items-center justify-between p-4" style={{ backgroundColor: '#F6F6F6', borderBottom: '1px solid #E0E0E0' }}>
+        <button
           onClick={() => navigate('/volunteer')}
-          className="w-12 h-12 hover:opacity-80"
-          style={{ backgroundColor: '#9B9B9B' }}
+          className="flex items-center justify-center w-12 h-12 hover:opacity-70"
+          style={{ backgroundColor: '#A1A1A1', color: '#fff', fontSize: 22, fontFamily: 'Inter, sans-serif' }}
         >
-          <ArrowLeft className="w-6 h-6 text-white" />
-        </Button>
+          {'<'}
+        </button>
 
         <div className="text-center">
           <p className="text-sm" style={{ color: '#6B6B6B' }}>{shipment?.date}</p>
@@ -221,8 +219,8 @@ export default function VolunteerItemsEntry() {
         </div>
 
         <div className="flex flex-col items-center cursor-pointer" onClick={() => navigate('/profile')}>
-          <Avatar className="w-14 h-14" style={{ backgroundColor: '#9B9B9B' }}>
-            <AvatarFallback className="text-white" style={{ backgroundColor: '#9B9B9B' }}>{initials}</AvatarFallback>
+          <Avatar className="w-14 h-14" style={{ backgroundColor: '#A1A1A1' }}>
+            <AvatarFallback className="text-white" style={{ backgroundColor: '#A1A1A1' }}>{initials}</AvatarFallback>
           </Avatar>
           <span className="text-xs mt-1" style={{ color: '#1F1F1F' }}>Volunteer</span>
         </div>
@@ -231,7 +229,7 @@ export default function VolunteerItemsEntry() {
       {/* Column headers */}
       <div
         className="grid gap-px text-sm font-medium px-2 py-2 sticky top-0 z-10"
-        style={{ gridTemplateColumns: '2fr 1fr 1fr 1.5fr 2rem', backgroundColor: '#E8E8E8', color: '#1F1F1F' }}
+        style={{ gridTemplateColumns: '2fr 1fr 1fr 1.5fr 2rem', backgroundColor: '#CACACA', color: '#1F1F1F' }}
       >
         <div className="pl-2">Item</div>
         <div>Count</div>
