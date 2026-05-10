@@ -29,25 +29,28 @@ export default function ManagerItemsCatalog() {
     navigate('/profile');
   };
 
-  const handleCreateItem = () => {
+  const handleCreateItem = async () => {
     if (!newItemName || !newItemUnit || !newItemCategory) {
       toast.error('Please fill in all fields');
       return;
     }
 
-    addCatalogItem({
-      name: newItemName,
-      unit: newItemUnit,
-      category: newItemCategory,
-      description: `${newItemUnit} of ${newItemCategory}`,
-      postedBy: user?.name,
-    });
-
-    toast.success('Item created successfully!');
-    setNewItemName('');
-    setNewItemUnit('');
-    setNewItemCategory('');
-    setDialogOpen(false);
+    try {
+      await addCatalogItem({
+        name: newItemName,
+        unit: newItemUnit,
+        category: newItemCategory,
+        description: `${newItemUnit} of ${newItemCategory}`,
+        postedBy: user?.name,
+      });
+      toast.success('Item created successfully!');
+      setNewItemName('');
+      setNewItemUnit('');
+      setNewItemCategory('');
+      setDialogOpen(false);
+    } catch {
+      toast.error('Failed to create item. Please try again.');
+    }
   };
 
   const initials = user?.name

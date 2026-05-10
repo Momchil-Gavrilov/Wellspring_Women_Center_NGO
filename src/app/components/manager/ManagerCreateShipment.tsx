@@ -23,15 +23,19 @@ export default function ManagerCreateShipment() {
     navigate('/profile');
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!title || !date) {
       toast.error('Please fill in all fields');
       return;
     }
 
-    addShipment({ name: title, date });
-    toast.success('Shipment created successfully!');
-    navigate('/manager');
+    try {
+      await addShipment({ name: title, date });
+      toast.success('Shipment created successfully!');
+      navigate('/manager');
+    } catch {
+      toast.error('Failed to create shipment. Please try again.');
+    }
   };
 
   const initials = user?.name
