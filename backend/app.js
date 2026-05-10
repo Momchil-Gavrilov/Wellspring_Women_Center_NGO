@@ -32,6 +32,12 @@ app.use('/api/catalog', require('./routes/catalog'));
 app.use('/api/pricing', require('./routes/pricing'));
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', env: !!process.env.MONGODB_URI }));
 
+// 404 logger — catch anything Express doesn't match
+app.use((req, res) => {
+  console.log('[404]', req.method, req.url);
+  res.status(404).json({ error: `Not found: ${req.method} ${req.url}` });
+});
+
 // Global error handler
 app.use((err, _req, res, _next) => {
   console.error('[ERROR]', err.message);
