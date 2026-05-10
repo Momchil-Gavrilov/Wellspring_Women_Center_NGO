@@ -1,5 +1,9 @@
 {
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+  "routes": [
+    { "src": "/api/health",          "dest": "/api/health"    },
+    { "src": "/api/shipments(.*)",   "dest": "/api/shipments" },
+    { "src": "/api/catalog(.*)",     "dest": "/api/catalog"   },
+    { "src": "/api/pricing(.*)",     "dest": "/api/pricing"   },
+    { "src": "/(.*)",                "dest": "/index.html"    }
   ]
 }
