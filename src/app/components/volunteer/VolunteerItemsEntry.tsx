@@ -318,12 +318,12 @@ export default function VolunteerItemsEntry() {
         )}
 
         {/* Info box */}
-        <div
+        /* <div
           className="mx-auto mb-5 px-5 py-4 text-sm text-center max-w-xs"
           style={{ backgroundColor: '#3D5166', color: '#FFFFFF', borderRadius: 8 }}
         >
           To use speech-to-text, simply name the item and the amount! The system will fill in the rest.
-        </div>
+        </div> */
 
         <div className="flex items-center justify-center gap-8">
           <Button

@@ -51,6 +51,34 @@ router.patch('/:id', async (req, res) => {
   }
 });
 
+// PUT /api/shipments/:id — update shipment name and date
+router.put('/:id', async (req, res) => {
+  try {
+    const { name, date } = req.body;
+    const shipment = await Shipment.findByIdAndUpdate(
+      req.params.id,
+      { name, date },
+      { new: true, runValidators: true }
+    );
+    if (!shipment) return res.status(404).json({ error: 'Shipment not found' });
+    res.json(shipment);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// DELETE /api/shipments/:id — delete a shipment and all its entries
+router.delete('/:id', async (req, res) => {
+  try {
+    const shipment = await Shipment.findByIdAndDelete(req.params.id);
+    if (!shipment) return res.status(404).json({ error: 'Shipment not found' });
+    await VolunteerEntry.deleteMany({ shipmentId: req.params.id });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/shipments/:id/entries — get all volunteer entries for a shipment
 router.get('/:id/entries', async (req, res) => {
   try {
