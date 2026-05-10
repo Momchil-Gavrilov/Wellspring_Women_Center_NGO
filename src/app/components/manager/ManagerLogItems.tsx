@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -9,28 +9,50 @@ import { useUser } from '../../context/UserContext';
 import { useData } from '../../context/DataContext';
 import { ArrowLeft, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import type { EntryItem } from '../../../services/api';
+
+interface AllItem extends EntryItem {
+  volunteerName: string;
+  shipmentName: string;
+  shipmentDate: string;
+}
 
 export default function ManagerLogItems() {
   const navigate = useNavigate();
   const { user } = useUser();
-  const { shipments, catalogItems, addCatalogItem } = useData();
+  const { shipments, catalogItems, addCatalogItem, getShipmentEntries } = useData();
 
+  const [allItems, setAllItems] = useState<AllItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [newItemName, setNewItemName] = useState('');
   const [newItemUnit, setNewItemUnit] = useState('');
   const [newItemCategory, setNewItemCategory] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [selectedItem, setSelectedItem] = useState<AllItem | null>(null);
 
-  const handleBack = () => {
-    navigate('/manager');
-  };
+  // Fetch all entries across all shipments
+  useEffect(() => {
+    if (shipments.length === 0) return;
+    Promise.all(
+      shipments.map(s =>
+        getShipmentEntries(s.id).then(entries =>
+          entries.flatMap(entry =>
+            entry.items.map(item => ({
+              ...item,
+              volunteerName: entry.volunteerName,
+              shipmentName: s.name,
+              shipmentDate: s.date,
+            }))
+          )
+        ).catch(() => [] as AllItem[])
+      )
+    ).then(results => setAllItems(results.flat()));
+  }, [shipments, getShipmentEntries]);
 
-  const handleProfileClick = () => {
-    navigate('/profile');
-  };
+  const handleBack = () => navigate('/manager');
+  const handleProfileClick = () => navigate('/profile');
 
-  const handleEditItem = (item: any) => {
+  const handleEditItem = (item: AllItem) => {
     setSelectedItem(item);
     setNewItemName(item.itemName);
     setNewItemUnit(item.unit);
@@ -38,15 +60,19 @@ export default function ManagerLogItems() {
     setDialogOpen(true);
   };
 
-  const handleApproveItem = (item: any) => {
-    addCatalogItem({
-      name: item.itemName,
-      unit: item.unit,
-      category: item.category,
-      description: `Description of the item like the units and categories etcetc`,
-      postedBy: item.volunteer,
-    });
-    toast.success(`${item.itemName} approved and added to catalog!`);
+  const handleApproveItem = async (item: AllItem) => {
+    try {
+      await addCatalogItem({
+        name: item.itemName,
+        unit: item.unit,
+        category: item.category,
+        description: `Logged by ${item.volunteerName}`,
+        postedBy: item.volunteerName,
+      });
+      toast.success(`${item.itemName} approved and added to catalog!`);
+    } catch {
+      toast.error('Failed to approve item. Please try again.');
+    }
   };
 
   const handleCreateNew = () => {
@@ -57,26 +83,28 @@ export default function ManagerLogItems() {
     setDialogOpen(true);
   };
 
-  const handleCreateItem = () => {
+  const handleCreateItem = async () => {
     if (!newItemName || !newItemUnit || !newItemCategory) {
       toast.error('Please fill in all fields');
       return;
     }
-
-    addCatalogItem({
-      name: newItemName,
-      unit: newItemUnit,
-      category: newItemCategory,
-      description: `Description of the item like the units and categories etcetc`,
-      postedBy: user?.name,
-    });
-
-    toast.success('Item added to catalog!');
-    setNewItemName('');
-    setNewItemUnit('');
-    setNewItemCategory('');
-    setDialogOpen(false);
-    setSelectedItem(null);
+    try {
+      await addCatalogItem({
+        name: newItemName,
+        unit: newItemUnit,
+        category: newItemCategory,
+        description: `Added by ${user?.name || 'Manager'}`,
+        postedBy: user?.name || 'Manager',
+      });
+      toast.success('Item added to catalog!');
+      setNewItemName('');
+      setNewItemUnit('');
+      setNewItemCategory('');
+      setDialogOpen(false);
+      setSelectedItem(null);
+    } catch {
+      toast.error('Failed to add item. Please try again.');
+    }
   };
 
   const initials = user?.name
@@ -85,17 +113,11 @@ export default function ManagerLogItems() {
     .join('')
     .toUpperCase() || 'M';
 
-  const allItems = shipments.flatMap(s =>
-    s.items.map(item => ({
-      ...item,
-      shipmentName: s.name,
-      shipmentDate: s.date,
-    }))
-  );
-
   const catalogItemNames = catalogItems.map(c => c.name.toLowerCase());
   const unapprovedItems = allItems.filter(
-    item => !catalogItemNames.includes(item.itemName.toLowerCase())
+    item =>
+      !catalogItemNames.includes(item.itemName.toLowerCase()) &&
+      item.itemName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -115,7 +137,9 @@ export default function ManagerLogItems() {
 
         <div className="flex flex-col items-center cursor-pointer" onClick={handleProfileClick}>
           <Avatar className="w-16 h-16" style={{ backgroundColor: '#9B9B9B' }}>
-            <AvatarFallback className="text-white" style={{ backgroundColor: '#9B9B9B' }}>{initials}</AvatarFallback>
+            <AvatarFallback className="text-white" style={{ backgroundColor: '#9B9B9B' }}>
+              {initials}
+            </AvatarFallback>
           </Avatar>
           <span className="text-sm mt-1" style={{ color: '#1F1F1F' }}>Manager</span>
         </div>
@@ -150,9 +174,12 @@ export default function ManagerLogItems() {
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
                           <h3 className="font-medium">{item.itemName}</h3>
+                          <p className="text-xs text-gray-400">{item.shipmentName} · {item.shipmentDate}</p>
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
-                          <span className="text-sm text-gray-500 underline">Posted by {item.volunteer}</span>
+                          <span className="text-sm text-gray-500 underline">
+                            Posted by {item.volunteerName}
+                          </span>
                           <Button
                             onClick={() => handleEditItem(item)}
                             variant="ghost"
@@ -174,7 +201,7 @@ export default function ManagerLogItems() {
                         </div>
                       </div>
                       <p className="text-sm text-gray-600 mt-1">
-                        Description of the item like the units and categories etcetc
+                        {item.count} {item.unit} · {item.category}
                       </p>
                     </div>
                   </div>
@@ -187,14 +214,15 @@ export default function ManagerLogItems() {
             <h2 className="text-lg mb-4 pb-2 border-b border-gray-900">Catalog of Items</h2>
             <div className="space-y-4">
               {(() => {
-                const grouped = catalogItems
+                const filtered = catalogItems.filter(c =>
+                  c.name.toLowerCase().includes(searchQuery.toLowerCase())
+                );
+                const grouped = filtered
                   .sort((a, b) => a.name.localeCompare(b.name))
                   .reduce((acc, item) => {
-                    const firstLetter = item.name[0].toUpperCase();
-                    if (!acc[firstLetter]) {
-                      acc[firstLetter] = [];
-                    }
-                    acc[firstLetter].push(item);
+                    const letter = item.name[0].toUpperCase();
+                    if (!acc[letter]) acc[letter] = [];
+                    acc[letter].push(item);
                     return acc;
                   }, {} as Record<string, typeof catalogItems>);
 
@@ -211,9 +239,7 @@ export default function ManagerLogItems() {
                 ));
               })()}
               {catalogItems.length === 0 && (
-                <div className="p-8 text-center text-gray-400">
-                  No items in catalog yet
-                </div>
+                <div className="p-8 text-center text-gray-400">No items in catalog yet</div>
               )}
             </div>
           </div>
@@ -233,9 +259,11 @@ export default function ManagerLogItems() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="bg-gray-200">
           <DialogHeader>
-            <DialogTitle className="text-3xl text-center mb-6">New Item</DialogTitle>
+            <DialogTitle className="text-3xl text-center mb-6">
+              {selectedItem ? 'Edit Item' : 'New Item'}
+            </DialogTitle>
             <DialogDescription className="sr-only">
-              Add a new item to the catalog with name, unit, and category
+              Add or edit an item in the catalog
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-6">
@@ -274,7 +302,7 @@ export default function ManagerLogItems() {
               className="w-full h-14 hover:opacity-90 text-white text-xl"
               style={{ backgroundColor: '#9B9B9B' }}
             >
-              Create
+              {selectedItem ? 'Save' : 'Create'}
             </Button>
           </div>
         </DialogContent>
